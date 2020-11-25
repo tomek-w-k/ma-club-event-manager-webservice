@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+## Database access property file ##
+/src/main/resources/db-access.properties
