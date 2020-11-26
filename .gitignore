@@ -34,3 +34,9 @@ build/
 
 ## Database access property file ##
 /src/main/resources/db-access.properties
+
+## Liquibase property file ##
+/src/main/resources/liquibase.properties
+
+## Liquibase changelog file ##
+/src/main/resources/liquibase/changelog.xml
