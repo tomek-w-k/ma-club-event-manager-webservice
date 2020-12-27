@@ -2,6 +2,8 @@ package com.app.em.persistence.entity.registration;
 
 import com.app.em.persistence.entity.event.Event;
 import com.app.em.persistence.entity.user.User;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 
@@ -12,26 +14,23 @@ import javax.persistence.*;
 public abstract class Registration
 {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    //@JsonBackReference
+    @ManyToOne(fetch = FetchType.EAGER)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Event event;
-
     @Column(name = "fee_received")
-    private Boolean feeReceived;
+    private Boolean feeReceived = false;
 
 
     public Registration() {  }
 
-    public Registration(Long id, User user, Event event, Boolean feeReceived)
+    public Registration(Long id, User user, Boolean feeReceived)
     {
         this.id = id;
         this.user = user;
-        this.event = event;
         this.feeReceived = feeReceived;
     }
 
@@ -53,16 +52,6 @@ public abstract class Registration
     public void setUser(User user)
     {
         this.user = user;
-    }
-
-    public Event getEvent()
-    {
-        return event;
-    }
-
-    public void setEvent(Event event)
-    {
-        this.event = event;
     }
 
     public Boolean getFeeReceived()

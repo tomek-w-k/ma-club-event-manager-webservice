@@ -16,7 +16,6 @@ public class Fee
     @Column(name = "title")
     private String title;
 
-    @NotBlank
     @Column(name = "amount")
     private Float amount;
 

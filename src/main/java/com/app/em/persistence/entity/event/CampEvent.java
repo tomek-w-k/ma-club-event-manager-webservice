@@ -1,8 +1,10 @@
 package com.app.em.persistence.entity.event;
 
 import com.app.em.persistence.entity.registration.CampRegistration;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import java.util.Date;
 import java.util.Set;
 
@@ -14,6 +16,7 @@ public class CampEvent extends Event
     @Column(name = "sayonara_meeting")
     private Boolean sayonaraMeeting;
 
+    @NotBlank
     @Column(name = "clothing_type")
     private String clothingType;
 
@@ -25,6 +28,7 @@ public class CampEvent extends Event
     @JoinColumn(name = "camp_event_id")
     private Set<Fee> fees;
 
+    @JsonManagedReference
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "camp_event_id")
     private Set<CampRegistration> campRegistrations;

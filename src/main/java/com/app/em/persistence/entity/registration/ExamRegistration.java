@@ -13,7 +13,7 @@ import javax.persistence.*;
 public class ExamRegistration extends Registration
 {
     @Column(name = "participation_accepted")
-    private Boolean participationAccepted;
+    private Boolean participationAccepted = false;
 
     @JsonBackReference
     @ManyToOne
@@ -23,9 +23,9 @@ public class ExamRegistration extends Registration
 
     public ExamRegistration() {  }
 
-    public ExamRegistration(Long id, User user, Event event, Boolean feeReceived, Boolean participationAccepted, ExamEvent examEvent)
+    public ExamRegistration(Long id, User user, Boolean feeReceived, Boolean participationAccepted, ExamEvent examEvent)
     {
-        super(id, user, event, feeReceived);
+        super(id, user, feeReceived);
         this.participationAccepted = participationAccepted;
         this.examEvent = examEvent;
     }

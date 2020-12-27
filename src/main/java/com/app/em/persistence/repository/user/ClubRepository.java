@@ -1,4 +1,4 @@
-package com.app.em.persistence.repository;
+package com.app.em.persistence.repository.user;
 
 import com.app.em.persistence.entity.user.Club;
 import org.springframework.data.repository.CrudRepository;

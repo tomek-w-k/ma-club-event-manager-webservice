@@ -16,8 +16,9 @@ public class CampRegistration extends Registration
     @Column(name = "sayonara_meeting_participation")
     private Boolean sayonaraMeetingParticipation;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @MapsId
+    @OneToOne(fetch = FetchType.EAGER)
+    //@MapsId
+    @JoinColumn(name = "clothing_size_id")
     private ClothingSize clothingSize;
 
     @Column(name = "accommodation")
@@ -33,14 +34,13 @@ public class CampRegistration extends Registration
 
     public CampRegistration(Long id,
                             User user,
-                            Event event,
                             Boolean feeReceived,
                             Boolean sayonaraMeetingParticipation,
                             ClothingSize clothingSize,
                             Boolean accommodation,
                             CampEvent campEvent)
     {
-        super(id, user, event, feeReceived);
+        super(id, user, feeReceived);
         this.sayonaraMeetingParticipation = sayonaraMeetingParticipation;
         this.clothingSize = clothingSize;
         this.accommodation = accommodation;

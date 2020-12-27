@@ -1,7 +1,7 @@
 package com.app.em.security.service;
 
 import com.app.em.persistence.entity.user.User;
-import com.app.em.persistence.repository.UserRepository;
+import com.app.em.persistence.repository.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

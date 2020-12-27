@@ -1,10 +1,10 @@
-package com.app.em.controller;
+package com.app.em.controller.security;
 
 import com.app.em.persistence.entity.user.Role;
 import com.app.em.persistence.entity.user.RoleEnum;
 import com.app.em.persistence.entity.user.User;
-import com.app.em.persistence.repository.RoleRepository;
-import com.app.em.persistence.repository.UserRepository;
+import com.app.em.persistence.repository.user.RoleRepository;
+import com.app.em.persistence.repository.user.UserRepository;
 import com.app.em.security.jwt.JwtUtils;
 import com.app.em.security.payload.request.LoginRequest;
 import com.app.em.security.payload.request.SignUpRequest;

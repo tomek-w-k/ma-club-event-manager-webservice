@@ -1,9 +1,11 @@
 package com.app.em.persistence.entity.event;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 
@@ -13,7 +15,7 @@ import java.util.Date;
 public abstract class Event
 {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotBlank
@@ -26,19 +28,19 @@ public abstract class Event
     @Column(name = "event_picture_path")
     private String eventPicturePath;
 
-    @NotBlank
     @Temporal(TemporalType.TIMESTAMP)
     @CreationTimestamp
+    @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
     @Column(name = "date_created", updatable = false)
     private Date dateCreated;
 
-    @NotBlank
     @Temporal(TemporalType.TIMESTAMP)
+    @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
     @Column(name = "start_date")
     private Date startDate;
 
-    @NotBlank
     @Temporal(TemporalType.TIMESTAMP)
+    @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
     @Column(name = "end_date")
     private Date endDate;
 

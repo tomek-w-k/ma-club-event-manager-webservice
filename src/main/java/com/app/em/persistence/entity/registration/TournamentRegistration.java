@@ -43,7 +43,6 @@ public class TournamentRegistration extends Registration
 
     public TournamentRegistration(Long id,
                                   User user,
-                                  Event event,
                                   Boolean feeReceived,
                                   Boolean sayonaraMeetingParticipation,
                                   Boolean accomodation,
@@ -53,7 +52,7 @@ public class TournamentRegistration extends Registration
                                   WeightAgeCategory weightAgeCategory,
                                   TournamentEvent tournamentEvent)
     {
-        super(id, user, event, feeReceived);
+        super(id, user, feeReceived);
         this.sayonaraMeetingParticipation = sayonaraMeetingParticipation;
         this.accomodation = accomodation;
         this.roomType = roomType;

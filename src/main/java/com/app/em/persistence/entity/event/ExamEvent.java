@@ -1,6 +1,7 @@
 package com.app.em.persistence.entity.event;
 
 import com.app.em.persistence.entity.registration.ExamRegistration;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -13,8 +14,13 @@ public class ExamEvent extends Event
 {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "exam_event_id")
-    Set<Fee> fees;
+    private Set<Fee> fees;
 
+    /*
+        Setting FetchType.EAGER here caused that exam registrations weren't removed from database
+        by calling deleteById() method from ExamRegistrationRpository without any exception thrown.
+     */
+    @JsonManagedReference
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "exam_event_id")
     private Set<ExamRegistration> examRegistrations;

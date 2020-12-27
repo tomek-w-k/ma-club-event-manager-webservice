@@ -1,11 +1,13 @@
-package com.app.em.controller;
+package com.app.em.controller.security;
 
 import com.app.em.persistence.entity.user.*;
-import com.app.em.persistence.repository.*;
+import com.app.em.persistence.repository.user.BranchChiefRepository;
+import com.app.em.persistence.repository.user.ClubRepository;
+import com.app.em.persistence.repository.user.RankRepository;
+import com.app.em.persistence.repository.user.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
