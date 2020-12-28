@@ -98,10 +98,28 @@ public class EventControler
 
     // - - - - TOURNAMENT EVENT - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    @PostMapping("/tournament_events")
+    public ResponseEntity addTournamentEvent(@RequestBody TournamentEvent tournamentEvent)
+    {
+        return addEvent(tournamentEvent);
+    }
+
+    @GetMapping(value = "/tournament_events/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity getTournamentEvent(@PathVariable Long id)
+    {
+        return getEvent(id);
+    }
+
     @GetMapping(value = "/tournament_events", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getAllTournamentEvents() throws JsonProcessingException
     {
         return getAllEvents(TournamentEvent.class);
+    }
+
+    @PutMapping("/tournament_events")
+    public ResponseEntity updateTournamentEvent(@RequestBody TournamentEvent tournamentEvent)
+    {
+        return updateEvent(tournamentEvent);
     }
 
 
