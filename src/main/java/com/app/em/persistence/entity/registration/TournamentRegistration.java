@@ -3,7 +3,6 @@ package com.app.em.persistence.entity.registration;
 import com.app.em.persistence.entity.event.*;
 import com.app.em.persistence.entity.user.User;
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import liquibase.pro.packaged.J;
 
 import javax.persistence.*;
 
@@ -15,8 +14,8 @@ public class TournamentRegistration extends Registration
     @Column(name = "sayonara_meeting_participation")
     private Boolean sayonaraMeetingParticipation;
 
-    @Column(name = "accomodation")
-    private Boolean accomodation;
+    @Column(name = "accommodation")
+    private Boolean accommodation;
 
     @OneToOne(fetch = FetchType.EAGER)
     //@MapsId
@@ -48,7 +47,7 @@ public class TournamentRegistration extends Registration
                                   User user,
                                   Boolean feeReceived,
                                   Boolean sayonaraMeetingParticipation,
-                                  Boolean accomodation,
+                                  Boolean accommodation,
                                   RoomType roomType,
                                   StayPeriod stayPeriod,
                                   Boolean asJudgeParticipation,
@@ -57,7 +56,7 @@ public class TournamentRegistration extends Registration
     {
         super(id, user, feeReceived);
         this.sayonaraMeetingParticipation = sayonaraMeetingParticipation;
-        this.accomodation = accomodation;
+        this.accommodation = accommodation;
         this.roomType = roomType;
         this.stayPeriod = stayPeriod;
         this.asJudgeParticipation = asJudgeParticipation;
@@ -75,14 +74,14 @@ public class TournamentRegistration extends Registration
         this.sayonaraMeetingParticipation = sayonaraMeetingParticipation;
     }
 
-    public Boolean getAccomodation()
+    public Boolean getAccommodation()
     {
-        return accomodation;
+        return accommodation;
     }
 
-    public void setAccomodation(Boolean accomodation)
+    public void setAccommodation(Boolean accommodation)
     {
-        this.accomodation = accomodation;
+        this.accommodation = accommodation;
     }
 
     public RoomType getRoomType()
