@@ -18,19 +18,22 @@ public class TournamentRegistration extends Registration
     @Column(name = "accomodation")
     private Boolean accomodation;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @MapsId
+    @OneToOne(fetch = FetchType.EAGER)
+    //@MapsId
+    @JoinColumn(name = "room_type_id")
     private RoomType roomType;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @MapsId
+    @OneToOne(fetch = FetchType.EAGER)
+    //@MapsId
+    @JoinColumn(name = "stay_period_id")
     private StayPeriod stayPeriod;
 
     @Column(name = "as_judge_participation")
     private Boolean asJudgeParticipation;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @MapsId
+    @OneToOne(fetch = FetchType.EAGER)
+    //@MapsId
+    @JoinColumn(name = "weight_age_category_id")
     private WeightAgeCategory weightAgeCategory;
 
     @JsonBackReference

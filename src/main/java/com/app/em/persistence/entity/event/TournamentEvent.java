@@ -2,6 +2,7 @@ package com.app.em.persistence.entity.event;
 
 import com.app.em.persistence.entity.registration.ExamRegistration;
 import com.app.em.persistence.entity.registration.TournamentRegistration;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -33,6 +34,7 @@ public class TournamentEvent extends Event
     @JoinColumn(name = "tournament_event_id")
     private Set<WeightAgeCategory> weightAgeCategories;
 
+    @JsonManagedReference
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "tournament_event_id")
     private Set<TournamentRegistration> tournamentRegistrations;
