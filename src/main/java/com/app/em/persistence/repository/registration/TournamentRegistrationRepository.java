@@ -15,4 +15,8 @@ public interface TournamentRegistrationRepository extends CrudRepository<Tournam
     List<TournamentRegistration> findByTournamentEventId(Long id);
     List<TournamentRegistration> findByUserId(Long id);
     Optional<TournamentRegistration> findByUserIdAndTournamentEventId(Long userId, Long tournamentEventId);
+
+    Integer countTournamentRegistrationByRoomTypeId(Integer roomTypeId);
+    Integer countTournamentRegistrationByStayPeriodId(Integer stayPeriodId);
+    Integer countTournamentRegistrationByWeightAgeCategoryId(Integer weightAgeCategoryId);
 }

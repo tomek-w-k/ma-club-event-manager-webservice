@@ -15,12 +15,15 @@ import com.app.em.persistence.repository.weight_age_category.WeightAgeCategoryRe
 import com.app.em.security.payload.response.MessageResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.SQLIntegrityConstraintViolationException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -168,6 +171,26 @@ public class TournamentRegistrationController
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping(value = "/stay_periods/{stayPeriodId}/tournament_registrations")
+    public ResponseEntity getTournamentRegistrationsCountForStayPeriod(@PathVariable Integer stayPeriodId)
+    {
+        Integer stayPeriodCount = tournamentRegistrationRepository.countTournamentRegistrationByStayPeriodId(stayPeriodId);
+        return ResponseEntity.ok(Collections.singletonMap("stayPeriodCount", stayPeriodCount));
+    }
+
+    @GetMapping(value = "/room_types/{roomTypeId}/tournament_registrations")
+    public ResponseEntity getTournamentRegistrationsCountForRoomType(@PathVariable Integer roomTypeId)
+    {
+        Integer roomTypeCount = tournamentRegistrationRepository.countTournamentRegistrationByRoomTypeId(roomTypeId);
+        return ResponseEntity.ok(Collections.singletonMap("roomTypeCount", roomTypeCount));
+    }
+
+    @GetMapping(value = "/weight_age_categories/{weightAgeCategoryId}/tournament_registrations")
+    public ResponseEntity getTournamentRegistrationsCountForWeightAgeCategory(@PathVariable Integer weightAgeCategoryId)
+    {
+        Integer weightAgeCategoryCount = tournamentRegistrationRepository.countTournamentRegistrationByWeightAgeCategoryId(weightAgeCategoryId);
+        return ResponseEntity.ok(Collections.singletonMap("weightAgeCategoryCount", weightAgeCategoryCount));
+    }
 
     // - - - PRIVATE METHODS - - -
 

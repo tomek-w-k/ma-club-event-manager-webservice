@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.ConstraintViolationException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 import java.util.Optional;
 
@@ -137,6 +138,14 @@ public class EventControler
         return deleteEvent(id);
     }
 
+
+    // - - - - EXCEPTION HANDLERS - - - -
+
+    @ExceptionHandler({ SQLIntegrityConstraintViolationException.class })
+    public ResponseEntity handleException()
+    {
+        return ResponseEntity.badRequest().body(new MessageResponse("Items you want to remove are chosen by one or more users."));
+    }
 
     // - - - - PRIVATE METHODS - - - -
 
