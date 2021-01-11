@@ -12,6 +12,7 @@ import com.app.em.security.payload.response.JwtResponse;
 import com.app.em.security.payload.response.MessageResponse;
 import com.app.em.security.service.UserDetailsImpl;
 import com.app.em.security.service.UserDetailsServiceImpl;
+import org.hibernate.id.UUIDGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,12 +20,14 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 
@@ -66,8 +69,11 @@ public class AuthController
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());
 
+        String customSessionId = UUID.randomUUID().toString();
+
         return ResponseEntity.ok(new JwtResponse(
                accessToken,
+               customSessionId,
                userDetails.getId(),
                userDetails.getEmail(),
                roles

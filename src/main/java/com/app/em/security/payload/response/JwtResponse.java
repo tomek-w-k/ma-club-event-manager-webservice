@@ -8,6 +8,7 @@ public class JwtResponse
     private static final String TYPE = "Bearer";
 
     private String accessToken;
+    private String customSessionId;
     private Long id;
     private String email;
     private List<String> roles;
@@ -15,12 +16,23 @@ public class JwtResponse
 
     public JwtResponse() {  }
 
-    public JwtResponse(String accessToken, Long id, String email, List<String> roles)
+    public JwtResponse(String accessToken, String customSessionId, Long id, String email, List<String> roles)
     {
         this.accessToken = accessToken;
+        this.customSessionId = customSessionId;
         this.id = id;
         this.email = email;
         this.roles = roles;
+    }
+
+    public String getCustomSessionId()
+    {
+        return customSessionId;
+    }
+
+    public void setCustomSessionId(String customSessionId)
+    {
+        this.customSessionId = customSessionId;
     }
 
     public static String getTYPE()
