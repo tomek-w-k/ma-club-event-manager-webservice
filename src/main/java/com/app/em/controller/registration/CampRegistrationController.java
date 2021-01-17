@@ -17,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -135,6 +137,12 @@ public class CampRegistrationController
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping(value = "/clothing_sizes/{clothingSizeId}/camp_registrations")
+    public ResponseEntity getCampRegistrationsCountForClothingSize(@PathVariable Integer clothingSizeId)
+    {
+        Integer clothingSizeCount = campRegistrationRepository.countCampRegistrationByClothingSizeId(clothingSizeId);
+        return ResponseEntity.ok(Collections.singletonMap("clothingSizeCount", clothingSizeCount));
+    }
 
     // - - - PRIVATE METHODS - - -
 

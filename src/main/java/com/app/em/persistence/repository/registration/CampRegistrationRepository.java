@@ -15,4 +15,6 @@ public interface CampRegistrationRepository extends CrudRepository<CampRegistrat
     List<CampRegistration> findByCampEventId(Long id);
     List<CampRegistration> findByUserId(Long id);
     Optional<CampRegistration> findByUserIdAndCampEventId(Long userId, Long campEventId);
+
+    Integer countCampRegistrationByClothingSizeId(Integer clothingSizeId);
 }
