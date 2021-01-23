@@ -16,13 +16,17 @@ public class RoomType
     @Column(name = "room_type_name")
     private String roomTypeName;
 
+    @Column(name = "room_type_picture_path")
+    private String roomTypePicturePath;
+
 
     public RoomType() {  }
 
-    public RoomType(Integer id, @NotBlank String roomTypeName)
+    public RoomType(Integer id, @NotBlank String roomTypeName, String roomTypePicturePath)
     {
         this.id = id;
         this.roomTypeName = roomTypeName;
+        this.roomTypePicturePath = roomTypePicturePath;
     }
 
     public Integer getId()
@@ -43,5 +47,15 @@ public class RoomType
     public void setRoomTypeName(String roomTypeName)
     {
         this.roomTypeName = roomTypeName;
+    }
+
+    public String getRoomTypePicturePath()
+    {
+        return roomTypePicturePath;
+    }
+
+    public void setRoomTypePicturePath(String roomTypePicturePath)
+    {
+        this.roomTypePicturePath = roomTypePicturePath;
     }
 }
