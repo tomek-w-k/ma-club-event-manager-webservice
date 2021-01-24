@@ -22,6 +22,7 @@ public abstract class Event
     @Column(name = "event_name")
     private String eventName;
 
+    @Lob
     @Column(name = "event_description")
     private String eventDescription;
 

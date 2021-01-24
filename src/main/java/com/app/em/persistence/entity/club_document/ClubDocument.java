@@ -12,6 +12,7 @@ public class ClubDocument
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Lob
     @NotBlank
     @Column(name = "club_document_description")
     private String clubDocumentDescription;
