@@ -2,6 +2,7 @@ package com.app.em.persistence.entity.event;
 
 import com.app.em.persistence.entity.registration.ExamRegistration;
 import com.app.em.persistence.entity.registration.TournamentRegistration;
+import com.app.em.persistence.entity.team.Team;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import javax.persistence.*;
@@ -34,10 +35,15 @@ public class TournamentEvent extends Event
     @JoinColumn(name = "tournament_event_id")
     private Set<WeightAgeCategory> weightAgeCategories;
 
-    @JsonManagedReference
+//    @JsonManagedReference
+//    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+//    @JoinColumn(name = "tournament_event_id")
+//    private Set<TournamentRegistration> tournamentRegistrations;
+
+    @JsonManagedReference(value = "team_tournament_event_id")
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "tournament_event_id")
-    private Set<TournamentRegistration> tournamentRegistrations;
+    private Set<Team> teams;
 
 
     public TournamentEvent() {  }
@@ -55,7 +61,9 @@ public class TournamentEvent extends Event
                            Set<StayPeriod> stayPeriods,
                            Float fee,
                            Set<WeightAgeCategory> weightAgeCategories,
-                           Set<TournamentRegistration> tournamentRegistrations)
+    //                       Set<TournamentRegistration> tournamentRegistrations,
+                           Set<Team> teams
+    )
     {
         super(id, eventName, eventDescription, eventPicturePath, dateCreated, startDate, endDate);
         this.sayonaraMeeting = sayonaraMeeting;
@@ -64,7 +72,8 @@ public class TournamentEvent extends Event
         this.stayPeriods = stayPeriods;
         this.fee = fee;
         this.weightAgeCategories = weightAgeCategories;
-        this.tournamentRegistrations = tournamentRegistrations;
+        //this.tournamentRegistrations = tournamentRegistrations;
+        this.teams = teams;
     }
 
     public Boolean getSayonaraMeeting()
@@ -127,13 +136,24 @@ public class TournamentEvent extends Event
         this.weightAgeCategories = weightAgeCategories;
     }
 
-    public Set<TournamentRegistration> getTournamentRegistrations()
+//    public Set<TournamentRegistration> getTournamentRegistrations()
+//    {
+//        return tournamentRegistrations;
+//    }
+//
+//    public void setTournamentRegistrations(Set<TournamentRegistration> tournamentRegistrations)
+//    {
+//        this.tournamentRegistrations = tournamentRegistrations;
+//    }
+
+
+    public Set<Team> getTeams()
     {
-        return tournamentRegistrations;
+        return teams;
     }
 
-    public void setTournamentRegistrations(Set<TournamentRegistration> tournamentRegistrations)
+    public void setTeams(Set<Team> teams)
     {
-        this.tournamentRegistrations = tournamentRegistrations;
+        this.teams = teams;
     }
 }

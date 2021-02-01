@@ -5,8 +5,10 @@ import com.app.em.persistence.entity.event.StayPeriod;
 import com.app.em.persistence.entity.event.TournamentEvent;
 import com.app.em.persistence.entity.event.WeightAgeCategory;
 import com.app.em.persistence.entity.registration.TournamentRegistration;
+import com.app.em.persistence.entity.team.Team;
 import com.app.em.persistence.entity.user.User;
 import com.app.em.persistence.repository.event.TournamentEventRepository;
+import com.app.em.persistence.repository.registration.TeamRepository;
 import com.app.em.persistence.repository.registration.TournamentRegistrationRepository;
 import com.app.em.persistence.repository.room_type.RoomTypeRepository;
 import com.app.em.persistence.repository.stay_period.StayPeriodRepository;
@@ -23,9 +25,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.SQLIntegrityConstraintViolationException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 @RestController
@@ -51,23 +53,55 @@ public class TournamentRegistrationController
     UserRepository userRepository;
 
     @Autowired
+    TeamRepository teamRepository;
+
+    @Autowired
     ObjectMapper objectMapper;
 
 
     // CREATE :     addTournamentRegistration()
-    @PostMapping("/tournament_registrations")
-    public ResponseEntity addTournamentRegistration(@RequestBody TournamentRegistration tournamentRegistration)
+    @PostMapping("/teams/{teamId}/tournament_registrations")
+    public ResponseEntity addTournamentRegistration(@RequestBody TournamentRegistration tournamentRegistration, @PathVariable Long teamId)
     {
-        Optional<TournamentRegistration> tournamentRegistrationOptional = tournamentRegistrationRepository
-                .findByUserIdAndTournamentEventId(tournamentRegistration.getUser().getId(), tournamentRegistration.getTournamentEvent().getId());
-        if ( tournamentRegistrationOptional.isPresent() )
-        {
-            Optional<User> userOptional = userRepository.findById(tournamentRegistration.getUser().getId());
-            Optional<TournamentEvent> tournamentEventOptional = tournamentEventRepository.findById(tournamentRegistration.getTournamentEvent().getId());
-            if ( userOptional.isPresent() && tournamentEventOptional.isPresent() )
-                return registrationAlreadyExists(userOptional.get().getFullName(), tournamentEventOptional.get().getEventName());
-        }
+        User participantToRegister = tournamentRegistration.getUser();
 
+        // Check if both team and its event exist
+        Optional<Team> teamOptional = teamRepository.findById(teamId);
+        if (teamOptional.isPresent())
+        {
+            Optional<TournamentEvent> tournamentEventOptional = tournamentEventRepository.findTournamentEventByTeams(teamOptional.get());
+            if (tournamentEventOptional.isPresent())
+            {
+                // Check if a user with the given email exists, if not - create and get it, if so - get it
+                Optional<User> userOptional = userRepository.findByEmail(participantToRegister.getEmail());
+                if (userOptional.isEmpty())
+                {
+                    participantToRegister.setPassword(UUID.randomUUID().toString());
+                    participantToRegister = userRepository.save(participantToRegister);
+                }
+                else
+                {
+                    participantToRegister = userOptional.get();
+
+                    // If the user exists, check if it is already registered for this team's tournament event
+                    final User finalParticipantToRegister = participantToRegister;
+                    List<Boolean> results = tournamentEventOptional.get().getTeams().stream().map(team -> {
+                        return team.getTournamentRegistrations().stream().anyMatch(registration -> {
+                            return registration.getUser().getEmail().equals(finalParticipantToRegister.getEmail());
+                        });
+                    }).collect(Collectors.toList());
+
+                    if (results.contains(Boolean.TRUE))
+                        return ResponseEntity.badRequest().body(new MessageResponse("Error - A given participant is already registered for this event"));
+                }
+            }
+            else return ResponseEntity.badRequest().body(new MessageResponse("Error - A given event doesn't exist"));
+
+            tournamentRegistration.setTeam(teamOptional.get());
+        }
+        else return ResponseEntity.badRequest().body(new MessageResponse("Error - A given team doesn't exist."));
+
+        tournamentRegistration.setUser(participantToRegister);
         TournamentRegistration savedTournamentRegistration = tournamentRegistrationRepository.save(tournamentRegistration);
         return ResponseEntity.ok(savedTournamentRegistration);
     }
@@ -75,6 +109,7 @@ public class TournamentRegistrationController
     // READ :       getTournamentRegistrationById()             v
     //              getTournamentRegistrationsForTournament()   v
     //              getTournamentRegistrationsForUser()         v
+    //              getTournamentRegistrationsForTeam()         v
     //              getRoomTypesForTournament()                 v
     //              getStayPeriodsForTournament()               v
     //              getWeightAgeCategoriesForTournament()       v
@@ -91,12 +126,20 @@ public class TournamentRegistrationController
     @GetMapping(value = "/tournament_events/{tournamentEventId}/tournament_registrations", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getTournamentRegistrationsForTournament(@PathVariable Long tournamentEventId) throws JsonProcessingException
     {
-        Optional<List<TournamentRegistration>> tournamentRegistrationsOptional = Optional.ofNullable(
-                tournamentRegistrationRepository.findByTournamentEventId(tournamentEventId) );
-        if ( tournamentRegistrationsOptional.isEmpty() )
+        Optional<TournamentEvent> tournamentEventOptional = tournamentEventRepository.findById(tournamentEventId);
+        if ( tournamentEventOptional.isEmpty() )
+            return ResponseEntity.badRequest().body(new MessageResponse("A given event doesn't exist."));
+
+        Optional<List<Team>> teamsOptional = Optional.ofNullable(teamRepository.findByTournamentEvent(tournamentEventOptional.get()));
+        if ( teamsOptional.isEmpty() )
             return ResponseEntity.notFound().build();
 
-        return ResponseEntity.ok( objectMapper.writeValueAsString(tournamentRegistrationsOptional.get()) );
+        List<TournamentRegistration> registrations =
+                teamsOptional.get().stream().map(team -> team.getTournamentRegistrations())
+                                            .flatMap(regList -> regList.stream())
+                                            .collect(Collectors.toList());
+
+        return ResponseEntity.ok( objectMapper.writeValueAsString(registrations) );
     }
 
     @GetMapping(value = "/users/{userId}/tournament_registrations", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -104,6 +147,17 @@ public class TournamentRegistrationController
     {
         Optional<List<TournamentRegistration>> tournamentRegistrationsOptional = Optional.ofNullable(
                 tournamentRegistrationRepository.findByUserId(userId) );
+        if ( tournamentRegistrationsOptional.isEmpty() )
+            return ResponseEntity.notFound().build();
+
+        return ResponseEntity.ok( objectMapper.writeValueAsString(tournamentRegistrationsOptional.get()) );
+    }
+
+    @GetMapping(value = "teams/{teamId}/tournament_registrations", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity getTournamentRegistrationsForTeam(@PathVariable Long teamId) throws JsonProcessingException
+    {
+        Optional<List<TournamentRegistration>> tournamentRegistrationsOptional =
+                Optional.ofNullable( tournamentRegistrationRepository.findByTeamId(teamId) );
         if ( tournamentRegistrationsOptional.isEmpty() )
             return ResponseEntity.notFound().build();
 
@@ -141,18 +195,13 @@ public class TournamentRegistrationController
     }
 
     // UPDATE :     updateTournamentRegistration()
-    @PutMapping("/tournament_registrations")
+    @PutMapping("/teams/{teamId}/tournament_registrations")
     public ResponseEntity updateTournamentRegistration(@RequestBody TournamentRegistration tournamentRegistration)
     {
         Optional<TournamentRegistration> tournamentRegistrationOptional = tournamentRegistrationRepository.findById(tournamentRegistration.getId());
         if ( tournamentRegistrationOptional.isEmpty() )
             return ResponseEntity.notFound().build();
 
-        Optional<TournamentEvent> tournamentEventOptional = tournamentEventRepository.findTournamentEventByTournamentRegistrations(tournamentRegistration);
-        if ( tournamentEventOptional.isEmpty() )
-            return ResponseEntity.badRequest().body(new MessageResponse("There are no event specified for this registration."));
-
-        tournamentRegistration.setTournamentEvent(tournamentEventOptional.get());
         TournamentRegistration updatedTournamentRegistration = tournamentRegistrationRepository.save(tournamentRegistration);
 
         return ResponseEntity.ok(updatedTournamentRegistration);

@@ -18,7 +18,12 @@ public abstract class Registration
     private Long id;
 
     //@JsonBackReference
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne( fetch = FetchType.EAGER,
+                cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.REFRESH,
+                    CascadeType.MERGE
+                })
     private User user;
 
     @Column(name = "fee_received")

@@ -1,6 +1,7 @@
 package com.app.em.persistence.entity.registration;
 
 import com.app.em.persistence.entity.event.*;
+import com.app.em.persistence.entity.team.Team;
 import com.app.em.persistence.entity.user.User;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
@@ -35,10 +36,10 @@ public class TournamentRegistration extends Registration
     @JoinColumn(name = "weight_age_category_id")
     private WeightAgeCategory weightAgeCategory;
 
-    @JsonBackReference
+    @JsonBackReference(value = "tournament_registration_team_id")
     @ManyToOne
-    @JoinColumn(name = "tournament_event_id")
-    TournamentEvent tournamentEvent;
+    @JoinColumn(name = "team_id")
+    Team team;
 
 
     public TournamentRegistration() {  }
@@ -52,7 +53,7 @@ public class TournamentRegistration extends Registration
                                   StayPeriod stayPeriod,
                                   Boolean asJudgeParticipation,
                                   WeightAgeCategory weightAgeCategory,
-                                  TournamentEvent tournamentEvent)
+                                  Team team)
     {
         super(id, user, feeReceived);
         this.sayonaraMeetingParticipation = sayonaraMeetingParticipation;
@@ -61,7 +62,7 @@ public class TournamentRegistration extends Registration
         this.stayPeriod = stayPeriod;
         this.asJudgeParticipation = asJudgeParticipation;
         this.weightAgeCategory = weightAgeCategory;
-        this.tournamentEvent = tournamentEvent;
+        this.team = team;
     }
 
     public Boolean getSayonaraMeetingParticipation()
@@ -124,13 +125,13 @@ public class TournamentRegistration extends Registration
         this.weightAgeCategory = weightAgeCategory;
     }
 
-    public TournamentEvent getTournamentEvent()
+    public Team getTeam()
     {
-        return tournamentEvent;
+        return team;
     }
 
-    public void setTournamentEvent(TournamentEvent tournamentEvent)
+    public void setTeam(Team team)
     {
-        this.tournamentEvent = tournamentEvent;
+        this.team = team;
     }
 }

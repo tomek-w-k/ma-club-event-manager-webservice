@@ -12,9 +12,10 @@ import java.util.Optional;
 public interface TournamentRegistrationRepository extends CrudRepository<TournamentRegistration, Long>
 {
     Optional<TournamentRegistration> findById(Long id);
-    List<TournamentRegistration> findByTournamentEventId(Long id);
+    //List<TournamentRegistration> findByTournamentEventId(Long id);
+    List<TournamentRegistration> findByTeamId(Long teamId);
     List<TournamentRegistration> findByUserId(Long id);
-    Optional<TournamentRegistration> findByUserIdAndTournamentEventId(Long userId, Long tournamentEventId);
+    //Optional<TournamentRegistration> findByUserIdAndTournamentEventId(Long userId, Long tournamentEventId);
 
     Integer countTournamentRegistrationByRoomTypeId(Integer roomTypeId);
     Integer countTournamentRegistrationByStayPeriodId(Integer stayPeriodId);
