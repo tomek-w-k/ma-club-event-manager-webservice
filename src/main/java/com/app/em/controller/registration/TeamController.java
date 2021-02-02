@@ -3,6 +3,7 @@ package com.app.em.controller.registration;
 import com.app.em.persistence.entity.event.Event;
 import com.app.em.persistence.entity.event.TournamentEvent;
 import com.app.em.persistence.entity.team.Team;
+import com.app.em.persistence.entity.user.User;
 import com.app.em.persistence.repository.event.EventRepository;
 import com.app.em.persistence.repository.event.TournamentEventRepository;
 import com.app.em.persistence.repository.registration.TeamRepository;
@@ -46,10 +47,20 @@ public class TeamController
         if ( eventOptional.isEmpty() )
             return ResponseEntity.badRequest().body(new MessageResponse("Event specified for a given team doesn't exist."));
 
+        // Check if a given trainer already has a team for this tournament
+        final User trainer = team.getTrainer();
+        Boolean trainerAlreadyHasTeam = eventOptional.get().getTeams().stream().anyMatch(existingTeam -> {
+            return existingTeam.getTrainer().getId() == trainer.getId();
+        });
+
+        if ( trainerAlreadyHasTeam )
+            return ResponseEntity.badRequest().body(new MessageResponse("This trainer already has a team registered for this tournament."));
+
         team.setTournamentEvent( eventOptional.get() );
         Team savedTeam = teamRepository.save(team);
 
         return ResponseEntity.ok(savedTeam);
+        //return ResponseEntity.ok().build();
     }
 
     // READ ::      getTeam(), getAllTeams()
@@ -75,9 +86,13 @@ public class TeamController
     }
 
     @GetMapping(value = "/tournament_events/{tournamentEventId}/teams", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity getAllTeamsForEvent() throws JsonProcessingException
+    public ResponseEntity getTeamsForEvent(@PathVariable Long tournamentEventId) throws JsonProcessingException
     {
-        Optional<List<Team>> teamsOptional = Optional.ofNullable( teamRepository.findAll() );
+        Optional<TournamentEvent> tournamentEventOptional = tournamentEventRepository.findById(tournamentEventId);
+        if ( tournamentEventOptional.isEmpty() )
+            return ResponseEntity.badRequest().body(new MessageResponse("Error - A given tournament doesn't exist."));
+
+        Optional<List<Team>> teamsOptional = Optional.ofNullable( teamRepository.findByTournamentEvent(tournamentEventOptional.get()) );
         if ( teamsOptional.isEmpty() )
             return ResponseEntity.notFound().build();
 

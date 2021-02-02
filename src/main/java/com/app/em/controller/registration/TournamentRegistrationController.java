@@ -18,6 +18,9 @@ import com.app.em.security.payload.response.MessageResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hibernate.exception.ConstraintViolationException;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -120,7 +123,19 @@ public class TournamentRegistrationController
         if ( tournamentRegistrationOptional.isEmpty() )
             return ResponseEntity.notFound().build();
 
-        return ResponseEntity.ok( tournamentRegistrationOptional.get() );
+        TournamentRegistration tournamentRegistration = tournamentRegistrationOptional.get();
+        JSONObject registrationJson;
+        try
+        {
+            registrationJson = new JSONObject(objectMapper.writeValueAsString(tournamentRegistration));
+            JSONObject teamJson = new JSONObject();
+            teamJson.put("id", tournamentRegistration.getTeam().getId());
+            registrationJson.put("team", teamJson);
+        }
+        catch (JsonProcessingException e) { throw new RuntimeException(e); }
+        catch (JSONException e) { throw new RuntimeException(e); }
+
+        return ResponseEntity.ok( registrationJson.toString() );
     }
 
     @GetMapping(value = "/tournament_events/{tournamentEventId}/tournament_registrations", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -134,12 +149,28 @@ public class TournamentRegistrationController
         if ( teamsOptional.isEmpty() )
             return ResponseEntity.notFound().build();
 
-        List<TournamentRegistration> registrations =
-                teamsOptional.get().stream().map(team -> team.getTournamentRegistrations())
-                                            .flatMap(regList -> regList.stream())
-                                            .collect(Collectors.toList());
+        List<JSONObject> jsonObjects = teamsOptional
+                .get().stream().map(team -> team.getTournamentRegistrations())
+                                .flatMap(regList -> regList.stream())
+                                .map(registration -> {
+                                    JSONObject registrationJson;
+                                    try
+                                    {
+                                        registrationJson = new JSONObject(objectMapper.writeValueAsString(registration));
+                                        registrationJson.put("teamId", registration.getTeam().getId());
+                                        registrationJson.put("trainerFullName", registration.getTeam().getTrainer().getFullName());
+                                        registrationJson.put("trainerClubName", registration.getTeam().getTrainer().getClub().getClubName());
+                                    }
+                                    catch (JsonProcessingException e) { throw new RuntimeException(e); }
+                                    catch (JSONException e) { throw new RuntimeException(e); }
 
-        return ResponseEntity.ok( objectMapper.writeValueAsString(registrations) );
+                                    return registrationJson;
+                                })
+                                .collect(Collectors.toList());
+
+        String registrationsString = new JSONArray(jsonObjects).toString();
+
+        return ResponseEntity.ok( registrationsString );
     }
 
     @GetMapping(value = "/users/{userId}/tournament_registrations", produces = MediaType.APPLICATION_JSON_VALUE)

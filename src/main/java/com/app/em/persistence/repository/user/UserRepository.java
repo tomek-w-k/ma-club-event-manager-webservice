@@ -1,9 +1,6 @@
 package com.app.em.persistence.repository.user;
 
-import com.app.em.persistence.entity.user.BranchChief;
-import com.app.em.persistence.entity.user.Club;
-import com.app.em.persistence.entity.user.Rank;
-import com.app.em.persistence.entity.user.User;
+import com.app.em.persistence.entity.user.*;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -23,4 +20,5 @@ public interface UserRepository extends CrudRepository<User, Long>
     List<User> findByRank(Rank rank);
     List<User> findByClub(Club club);
     List<User> findByBranchChief(BranchChief branchChief);
+    List<User> findByRoles(Role role);
 }
