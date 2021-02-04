@@ -1,4 +1,4 @@
-package com.app.em.controller.security;
+package com.app.em.controller.user;
 
 import com.app.em.persistence.entity.event.TournamentEvent;
 import com.app.em.persistence.entity.team.Team;
@@ -16,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -65,9 +64,15 @@ public class UserController
         if ( userEmailOptional.isPresent() )
             return userAlreadyExists(user.getEmail());
 
-        user.setRank( createRankIfNotExist(user.getRank()) );
-        user.setClub( createClubIfNotExist(user.getClub()) );
-        user.setBranchChief( createBranchChiefIfNotExist(user.getBranchChief()) );
+        if ( user.getRank() != null )
+            user.setRank( rankRepository.findById(user.getRank().getId()).orElseGet(() -> rankRepository.save(user.getRank())) );
+
+        if ( user.getClub() != null )
+            user.setClub( clubRepository.findById(user.getClub().getId()).orElseGet(() -> clubRepository.save(user.getClub())) );
+
+        if ( user.getBranchChief() != null )
+            user.setBranchChief( branchChiefRepository.findById(user.getBranchChief().getId()).orElseGet(() ->
+                    branchChiefRepository.save(user.getBranchChief())) );
 
         User savedUser = userRepository.save(user);
 
@@ -165,9 +170,15 @@ public class UserController
         if ( userOptional.isEmpty() )
             return ResponseEntity.notFound().build();
 
-        user.setRank( createRankIfNotExist(user.getRank()) );
-        user.setClub( createClubIfNotExist(user.getClub()) );
-        user.setBranchChief( createBranchChiefIfNotExist(user.getBranchChief()) );
+        if ( user.getRank() != null )
+            user.setRank( rankRepository.findById(user.getRank().getId()).orElseGet(() -> rankRepository.save(user.getRank())) );
+
+        if ( user.getClub() != null )
+            user.setClub( clubRepository.findById(user.getClub().getId()).orElseGet(() -> clubRepository.save(user.getClub())) );
+
+        if ( user.getBranchChief() != null )
+            user.setBranchChief( branchChiefRepository.findById(user.getBranchChief().getId()).orElseGet(() ->
+                    branchChiefRepository.save(user.getBranchChief())) );
 
         User updatedUser = userRepository.save( user );
 
@@ -189,62 +200,5 @@ public class UserController
     private ResponseEntity userAlreadyExists(String who)
     {
         return ResponseEntity.status(HttpStatus.CONFLICT).body("User " + who + " already exists");
-    }
-
-    /*
-        Returns a Rank if exist in a repository, if does not exist - creates a new one, saves it into a repository
-        and returns it.
-     */
-    private Rank createRankIfNotExist(Rank rank)
-    {
-        Optional<Rank> rankIdOptional = rankRepository.findById(rank.getId());
-        if ( rankIdOptional.isPresent() )
-            return rankIdOptional.get();
-
-        Optional<Rank> rankNameOptional = rankRepository.findByRankName(rank.getRankName());
-        if ( rankNameOptional.isPresent() )
-            return rankNameOptional.get();
-
-        Rank newRank = rankRepository.save( rank );
-
-        return newRank;
-    }
-
-    /*
-        Returns a Club if exist in a repository, if does not exist - creates a new one, saves it into a repository
-        and returns it.
-     */
-    private Club createClubIfNotExist(Club club)
-    {
-        Optional<Club> clubIdOptional = clubRepository.findById(club.getId());
-        if ( clubIdOptional.isPresent() )
-            return clubIdOptional.get();
-
-        Optional<Club> clubNameOptional = clubRepository.findByClubName(club.getClubName());
-        if ( clubNameOptional.isPresent() )
-            return clubNameOptional.get();
-
-        Club newClub = clubRepository.save( club );
-
-        return newClub;
-    }
-
-    /*
-        Returns a BranchChief if exist in a repository, if does not exist - creates a new one, saves it into a repository
-        and returns it.
-     */
-    private BranchChief createBranchChiefIfNotExist(BranchChief branchChief)
-    {
-        Optional<BranchChief> branchChiefIdOptional = branchChiefRepository.findById(branchChief.getId());
-        if ( branchChiefIdOptional.isPresent() )
-            return branchChiefIdOptional.get();
-
-        Optional<BranchChief> branchChiefNameOptional = branchChiefRepository.findByBranchChiefName(branchChief.getBranchChiefName());
-        if ( branchChiefNameOptional.isPresent() )
-            return branchChiefNameOptional.get();
-
-        BranchChief newBranchChief = branchChiefRepository.save( branchChief );
-
-        return newBranchChief;
     }
 }

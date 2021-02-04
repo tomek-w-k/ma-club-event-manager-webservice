@@ -20,8 +20,8 @@ public abstract class Registration
     //@JsonBackReference
     @ManyToOne( fetch = FetchType.EAGER,
                 cascade = {
-                    CascadeType.PERSIST,
-                    CascadeType.REFRESH,
+//                    CascadeType.PERSIST,
+//                    CascadeType.REFRESH,
                     CascadeType.MERGE
                 })
     private User user;

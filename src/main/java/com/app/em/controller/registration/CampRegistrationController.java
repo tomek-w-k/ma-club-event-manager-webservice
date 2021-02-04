@@ -52,6 +52,9 @@ public class CampRegistrationController
         if ( campRegistrationOptional.isPresent() )
         {
             Optional<User> userOptional = userRepository.findById(campRegistration.getUser().getId());
+            if (userOptional.isPresent())
+                campRegistration.setUser(userOptional.get()); // Because of "detached entity" error
+
             Optional<CampEvent> campEventOptional = campEventRepository.findById(campRegistration.getCampEvent().getId());
             if ( userOptional.isPresent() && campEventOptional.isPresent() )
                 return registrationAlreadyExists(userOptional.get().getFullName(), campEventOptional.get().getEventName());

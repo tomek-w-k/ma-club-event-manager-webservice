@@ -4,6 +4,7 @@ import com.app.em.persistence.entity.user.BranchChief;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -11,4 +12,5 @@ import java.util.Optional;
 public interface BranchChiefRepository extends CrudRepository<BranchChief, Integer>
 {
     Optional<BranchChief> findByBranchChiefName(String branchChiefName);
+    List<BranchChief> findAll();
 }

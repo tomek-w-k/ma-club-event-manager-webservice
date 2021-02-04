@@ -1,10 +1,7 @@
 package com.app.em.controller.security;
 
-import com.app.em.persistence.entity.user.Role;
-import com.app.em.persistence.entity.user.RoleEnum;
-import com.app.em.persistence.entity.user.User;
-import com.app.em.persistence.repository.user.RoleRepository;
-import com.app.em.persistence.repository.user.UserRepository;
+import com.app.em.persistence.entity.user.*;
+import com.app.em.persistence.repository.user.*;
 import com.app.em.security.jwt.JwtUtils;
 import com.app.em.security.payload.request.LoginRequest;
 import com.app.em.security.payload.request.SignUpRequest;
@@ -46,6 +43,15 @@ public class AuthController
     RoleRepository roleRepository;
 
     @Autowired
+    ClubRepository clubRepository;
+
+    @Autowired
+    RankRepository rankRepository;
+
+    @Autowired
+    BranchChiefRepository branchChiefRepository;
+
+    @Autowired
     PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -81,48 +87,38 @@ public class AuthController
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signUpRequest)
+    public ResponseEntity registerUser(@Valid @RequestBody SignUpRequest signUpRequest)
     {
         if ( userRepository.existsByEmail(signUpRequest.getEmail()) )
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: This email is already taken."));
+            return ResponseEntity.badRequest().body(new MessageResponse("This email is already taken."));
 
         User user = new User();
-        user.setFullName("empty");
+        user.setFullName(signUpRequest.getFullName());
         user.setEmail(signUpRequest.getEmail());
         user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
 
-        Set<String> rolesStrings = signUpRequest.getRoles();
-        Set<Role> roles = new HashSet<>();
+        if ( signUpRequest.getClub() != null )
+            user.setClub( clubRepository.findById(signUpRequest.getClub().getId()).orElseGet(() -> clubRepository.save(signUpRequest.getClub())) );
 
-        if ( rolesStrings == null )
-        {
-            Role userRole = roleRepository.findByRoleName(RoleEnum.ROLE_USER)
-                    .orElseThrow( () -> new RuntimeException("Error: Role is not found.") );
+        user.setCountry(signUpRequest.getCountry());
+        user.setRank(signUpRequest.getRank());
 
-            roles.add(userRole);
-        }
-        else
+        if ( signUpRequest.getBranchChief() != null )
+        user.setBranchChief( branchChiefRepository.findById(signUpRequest.getBranchChief().getId()).orElseGet(() ->
+                branchChiefRepository.save(signUpRequest.getBranchChief())) );
+
+        Set<Role> rolesForUser = new HashSet<>();
+        Role roleUser = roleRepository.findByRoleName(RoleEnum.ROLE_USER).orElseGet(() -> new Role(RoleEnum.ROLE_USER));
+        rolesForUser.add(roleUser);
+        if ( signUpRequest.getAsTrainer() )
         {
-            rolesStrings.forEach( role -> {
-                    switch ( role )
-                    {
-                        case "ROLE_ADMIN":
-                            Role adminRole = roleRepository.findByRoleName(RoleEnum.ROLE_ADMIN)
-                                    .orElseThrow( () -> new RuntimeException("Error: Role is not found.") );
-                            roles.add(adminRole);
-                            break;
-                        default:
-                            Role userRole = roleRepository.findByRoleName(RoleEnum.ROLE_USER)
-                                    .orElseThrow( () -> new RuntimeException("Error: Role is not found.") );
-                            roles.add(userRole);
-                    }
-                }
-            );
+            Role roleTrainer = roleRepository.findByRoleName(RoleEnum.ROLE_TRAINER).orElseGet(() -> new Role(RoleEnum.ROLE_TRAINER));
+            rolesForUser.add(roleTrainer);
         }
 
-        user.setRoles(roles);
-        userRepository.save(user);
+        user.setRoles(rolesForUser);
+        User registeredUser = userRepository.save(user);
 
-        return ResponseEntity.ok(new MessageResponse("User registered successfully."));
+        return ResponseEntity.ok(registeredUser);
     }
 }

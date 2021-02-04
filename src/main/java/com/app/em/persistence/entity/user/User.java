@@ -8,6 +8,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Entity
@@ -19,7 +20,7 @@ public class User
     private long id;
 
     @NotBlank
-    @Column(name = "full_name", unique = true)
+    @Column(name = "full_name")
     private String fullName;
 
     @Email
@@ -46,12 +47,22 @@ public class User
     private Rank rank;
 
 //    @JsonManagedReference(value = "user-club")
-    @ManyToOne
+    @ManyToOne( fetch = FetchType.EAGER,
+                cascade = {
+//                        CascadeType.PERSIST,
+//                        CascadeType.REFRESH,
+                        CascadeType.MERGE
+                })
     @JoinColumn(name = "club_id")
     private Club club;
 
 //    @JsonManagedReference(value = "user-branch-chief")
-    @ManyToOne
+    @ManyToOne( fetch = FetchType.EAGER,
+                cascade = {
+//                        CascadeType.PERSIST,
+//                        CascadeType.REFRESH,
+                        CascadeType.MERGE
+                })
     @JoinColumn(name = "branch_chief_id")
     private BranchChief branchChief;
 
@@ -167,5 +178,21 @@ public class User
     public void setBranchChief(BranchChief branchChief)
     {
         this.branchChief = branchChief;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "User {" +
+                "id : " + id + "\n" +
+                "fullName : " + fullName + "\n" +
+                "email : " + email + "\n" +
+                "password : " + password + "\n" +
+                "country : " + country + "\n" +
+                "roles : " + roles.stream().map(role -> role.getRoleName().toString()).collect(Collectors.joining(", ")) + "\n" +
+                "rank : " + (rank != null ? ("id: " + rank.getId() + " rankName: " + rank.getRankName()) : "null") + "\n" +
+                "club : " + (club != null ? ("id: " + club.getId() + " clubName: " + club.getClubName()) : "null") + "\n" +
+                "branchChief : " + (branchChief != null ? ("id: " + branchChief.getId() + " branchChiefName: " + branchChief.getBranchChiefName()) : "null") + "\n" +
+                '}';
     }
 }
