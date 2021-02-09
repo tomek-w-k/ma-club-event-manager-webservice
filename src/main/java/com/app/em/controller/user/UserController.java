@@ -55,7 +55,7 @@ public class UserController
 
     @PostMapping("/users")
     public ResponseEntity addUser(@RequestBody User user) throws JsonProcessingException
-    { 
+    {
         Optional<User> userEmailOptional = userRepository.findByEmail(user.getEmail());
         if ( userEmailOptional.isPresent() )
             return userAlreadyExists(user.getEmail());
@@ -162,13 +162,14 @@ public class UserController
     @PutMapping("/users")
     public ResponseEntity updateUser(@RequestBody User user)
     {
-        Optional<User> userOptional = userRepository.findByEmail(user.getEmail());
-        if ( userOptional.isPresent() )
-            return ResponseEntity.badRequest().body(new MessageResponse("email_already_taken"));
-
-        userOptional = userRepository.findById( user.getId() );
-        if ( userOptional.isEmpty() )
+        Optional<User> userByIdOptional = userRepository.findById(user.getId());
+        if ( userByIdOptional.isEmpty() )
             return ResponseEntity.notFound().build();
+
+        Optional<User> userByEmailOptional = userRepository.findByEmail(user.getEmail());
+        // if such an email exists and if it's not the user's own email then return
+        if ( userByEmailOptional.isPresent() && (!user.getEmail().equals(userByIdOptional.get().getEmail()) ) )
+            return ResponseEntity.badRequest().body(new MessageResponse("email_already_taken"));
 
         if ( user.getRank() != null )
             user.setRank( rankRepository.findById(user.getRank().getId()).orElseGet(() -> rankRepository.save(user.getRank())) );
