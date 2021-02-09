@@ -166,7 +166,11 @@ public class UserController
     @PutMapping("/users")
     public ResponseEntity updateUser(@RequestBody User user)
     {
-        Optional<User> userOptional = userRepository.findById( user.getId() );
+        Optional<User> userOptional = userRepository.findByEmail(user.getEmail());
+        if ( userOptional.isPresent() )
+            return ResponseEntity.badRequest().body(new MessageResponse("email_already_taken"));
+
+        userOptional = userRepository.findById( user.getId() );
         if ( userOptional.isEmpty() )
             return ResponseEntity.notFound().build();
 
