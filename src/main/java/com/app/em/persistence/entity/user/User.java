@@ -35,7 +35,12 @@ public class User
     @Column(name = "country")
     private String country;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @ManyToMany(fetch = FetchType.LAZY,
+                cascade = {
+                        CascadeType.PERSIST,
+            //          CascadeType.REFRESH,
+                        //CascadeType.MERGE
+                })
     @JoinTable(name = "user_role",
                 joinColumns = @JoinColumn(name = "user_id"),
                 inverseJoinColumns = @JoinColumn(name = "role_id"))
@@ -49,9 +54,9 @@ public class User
 //    @JsonManagedReference(value = "user-club")
     @ManyToOne( fetch = FetchType.EAGER,
                 cascade = {
-//                        CascadeType.PERSIST,
+                        CascadeType.PERSIST,
 //                        CascadeType.REFRESH,
-                        CascadeType.MERGE
+                        //CascadeType.MERGE
                 })
     @JoinColumn(name = "club_id")
     private Club club;
@@ -59,9 +64,9 @@ public class User
 //    @JsonManagedReference(value = "user-branch-chief")
     @ManyToOne( fetch = FetchType.EAGER,
                 cascade = {
-//                        CascadeType.PERSIST,
+                        CascadeType.PERSIST,
 //                        CascadeType.REFRESH,
-                        CascadeType.MERGE
+                       // CascadeType.MERGE
                 })
     @JoinColumn(name = "branch_chief_id")
     private BranchChief branchChief;
