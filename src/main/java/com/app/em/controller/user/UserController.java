@@ -55,11 +55,7 @@ public class UserController
 
     @PostMapping("/users")
     public ResponseEntity addUser(@RequestBody User user) throws JsonProcessingException
-    {
-        Optional<User> userFullNameOptional = userRepository.findByFullName(user.getFullName());
-        if ( userFullNameOptional.isPresent() )
-            return userAlreadyExists(user.getFullName());
-
+    { 
         Optional<User> userEmailOptional = userRepository.findByEmail(user.getEmail());
         if ( userEmailOptional.isPresent() )
             return userAlreadyExists(user.getEmail());
