@@ -19,16 +19,13 @@ public class User
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @NotBlank
     @Column(name = "full_name")
     private String fullName;
 
     @Email
-    @NotBlank
     @Column(name = "email", unique = true)
     private String email;
 
-    @NotBlank
     @Column(name = "password")
     private String password;
 
@@ -75,9 +72,9 @@ public class User
     public User() {  }
 
     public User(long id,
-                @NotBlank String fullName,
-                @Email @NotBlank String email,
-                @NotBlank String password,
+                String fullName,
+                @Email String email,
+                String password,
                 String country,
                 Set<Role> roles,
                 Rank rank,

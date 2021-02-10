@@ -16,7 +16,6 @@ public class Club
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @NotBlank
     @Column(name = "club_name", unique = true)
     private String clubName;
 
@@ -27,7 +26,7 @@ public class Club
 
     public Club() {  }
 
-    public Club(int id, @NotBlank String clubName, Set<User> users)
+    public Club(int id, String clubName, Set<User> users)
     {
         this.id = id;
         this.clubName = clubName;

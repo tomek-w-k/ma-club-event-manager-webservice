@@ -16,7 +16,6 @@ public class BranchChief
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @NotBlank
     @Column(name = "branch_chief_name", unique = true)
     private String branchChiefName;
 
@@ -27,7 +26,7 @@ public class BranchChief
 
     public BranchChief() {  }
 
-    public BranchChief(int id, @NotBlank String branchChiefName, Set<User> users)
+    public BranchChief(int id, String branchChiefName, Set<User> users)
     {
         this.id = id;
         this.branchChiefName = branchChiefName;

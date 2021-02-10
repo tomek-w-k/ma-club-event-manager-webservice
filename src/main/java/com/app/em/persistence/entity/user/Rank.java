@@ -16,7 +16,6 @@ public class Rank
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @NotBlank
     @Column(name = "rank_name", unique = true)
     private String rankName;
 
@@ -27,7 +26,7 @@ public class Rank
 
     public Rank() {  }
 
-    public Rank(int id, @NotBlank String rankName, Set<User> users)
+    public Rank(int id, String rankName, Set<User> users)
     {
         this.id = id;
         this.rankName = rankName;
