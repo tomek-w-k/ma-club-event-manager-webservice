@@ -166,6 +166,11 @@ public class UserController
         if ( userByIdOptional.isEmpty() )
             return ResponseEntity.notFound().build();
 
+        // - - - soft deletion - - -
+        if (user.getEmail() == null)
+            return ResponseEntity.ok(userRepository.save(user));
+
+        // - - - update - - -
         Optional<User> userByEmailOptional = userRepository.findByEmail(user.getEmail());
         // if such an email exists and if it's not the user's own email then return
         if ( userByEmailOptional.isPresent() && (!user.getEmail().equals(userByIdOptional.get().getEmail()) ) )
