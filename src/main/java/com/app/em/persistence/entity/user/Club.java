@@ -3,9 +3,7 @@ package com.app.em.persistence.entity.user;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 
 @Entity
@@ -21,12 +19,12 @@ public class Club
 
     @JsonBackReference(value = "user-club")
     @OneToMany(mappedBy = "club", cascade = CascadeType.ALL)
-    private Set<User> users = new HashSet<>();
+    private List<User> users;
 
 
     public Club() {  }
 
-    public Club(int id, String clubName, Set<User> users)
+    public Club(int id, String clubName, List<User> users)
     {
         this.id = id;
         this.clubName = clubName;
@@ -53,12 +51,12 @@ public class Club
         this.clubName = clubName;
     }
 
-    public Set<User> getUsers()
+    public List<User> getUsers()
     {
         return users;
     }
 
-    public void setUsers(Set<User> users)
+    public void setUsers(List<User> users)
     {
         this.users = users;
     }

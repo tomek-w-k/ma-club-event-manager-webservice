@@ -3,9 +3,7 @@ package com.app.em.persistence.entity.user;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 
 @Entity
@@ -21,12 +19,12 @@ public class BranchChief
 
     @JsonBackReference(value = "user-branch-chief")
     @OneToMany(mappedBy = "branchChief", cascade = CascadeType.ALL)
-    private Set<User> users = new HashSet<>();
+    private List<User> users;
 
 
     public BranchChief() {  }
 
-    public BranchChief(int id, String branchChiefName, Set<User> users)
+    public BranchChief(int id, String branchChiefName, List<User> users)
     {
         this.id = id;
         this.branchChiefName = branchChiefName;
@@ -53,12 +51,12 @@ public class BranchChief
         this.branchChiefName = branchChiefName;
     }
 
-    public Set<User> getUsers()
+    public List<User> getUsers()
     {
         return users;
     }
 
-    public void setUsers(Set<User> users)
+    public void setUsers(List<User> users)
     {
         this.users = users;
     }

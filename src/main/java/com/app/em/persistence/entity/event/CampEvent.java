@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import java.util.Date;
-import java.util.Set;
+import java.util.List;
 
 
 @Entity
@@ -22,16 +22,16 @@ public class CampEvent extends Event
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "camp_event_id")
-    private Set<ClothingSize> clothingSizes;
+    private List<ClothingSize> clothingSizes;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "camp_event_id")
-    private Set<Fee> fees;
+    private List<Fee> fees;
 
     @JsonManagedReference
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "camp_event_id")
-    private Set<CampRegistration> campRegistrations;
+    private List<CampRegistration> campRegistrations;
 
 
     public CampEvent() {  }
@@ -45,9 +45,9 @@ public class CampEvent extends Event
                      Date endDate,
                      Boolean sayonaraMeeting,
                      String clothingType,
-                     Set<ClothingSize> clothingSizes,
-                     Set<Fee> fees,
-                     Set<CampRegistration> campRegistrations)
+                     List<ClothingSize> clothingSizes,
+                     List<Fee> fees,
+                     List<CampRegistration> campRegistrations)
     {
         super(id, eventName, eventDescription, eventPicturePath, dateCreated, startDate, endDate);
         this.sayonaraMeeting = sayonaraMeeting;
@@ -77,32 +77,32 @@ public class CampEvent extends Event
         this.clothingType = clothingType;
     }
 
-    public Set<ClothingSize> getClothingSizes()
+    public List<ClothingSize> getClothingSizes()
     {
         return clothingSizes;
     }
 
-    public void setClothingSizes(Set<ClothingSize> clothingSizes)
+    public void setClothingSizes(List<ClothingSize> clothingSizes)
     {
         this.clothingSizes = clothingSizes;
     }
 
-    public Set<Fee> getFees()
+    public List<Fee> getFees()
     {
         return fees;
     }
 
-    public void setFees(Set<Fee> fees)
+    public void setFees(List<Fee> fees)
     {
         this.fees = fees;
     }
 
-    public Set<CampRegistration> getCampRegistrations()
+    public List<CampRegistration> getCampRegistrations()
     {
         return campRegistrations;
     }
 
-    public void setCampRegistrations(Set<CampRegistration> campRegistrations)
+    public void setCampRegistrations(List<CampRegistration> campRegistrations)
     {
         this.campRegistrations = campRegistrations;
     }

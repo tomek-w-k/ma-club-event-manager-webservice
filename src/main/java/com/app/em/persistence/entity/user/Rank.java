@@ -3,9 +3,7 @@ package com.app.em.persistence.entity.user;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 
 @Entity
@@ -21,12 +19,12 @@ public class Rank
 
     @JsonBackReference(value = "user-rank")
     @OneToMany(mappedBy = "rank", cascade = CascadeType.ALL)
-    private Set<User> users = new HashSet<>();
+    private List<User> users;
 
 
     public Rank() {  }
 
-    public Rank(int id, String rankName, Set<User> users)
+    public Rank(int id, String rankName, List<User> users)
     {
         this.id = id;
         this.rankName = rankName;
@@ -53,12 +51,12 @@ public class Rank
         this.rankName = rankName;
     }
 
-    public Set<User> getUsers()
+    public List<User> getUsers()
     {
         return users;
     }
 
-    public void setUsers(Set<User> users)
+    public void setUsers(List<User> users)
     {
         this.users = users;
     }

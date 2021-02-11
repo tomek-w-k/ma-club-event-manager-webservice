@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.Set;
+import java.util.List;
 
 
 @Entity
@@ -14,16 +14,16 @@ public class ExamEvent extends Event
 {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "exam_event_id")
-    private Set<Fee> fees;
+    private List<Fee> fees;
 
     /*
-        Setting FetchType.EAGER here caused that exam registrations weren't removed from database
+        Listting FetchType.EAGER here caused that exam registrations weren't removed from database
         by calling deleteById() method from ExamRegistrationRpository without any exception thrown.
      */
     @JsonManagedReference
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "exam_event_id")
-    private Set<ExamRegistration> examRegistrations;
+    private List<ExamRegistration> examRegistrations;
 
 
     public ExamEvent() {  }
@@ -35,30 +35,30 @@ public class ExamEvent extends Event
                      Date dateCreated,
                      Date startDate,
                      Date endDate,
-                     Set<Fee> fees,
-                     Set<ExamRegistration> examRegistrations)
+                     List<Fee> fees,
+                     List<ExamRegistration> examRegistrations)
     {
         super(id, eventName, eventDescription, eventPicturePath, dateCreated, startDate, endDate);
         this.fees = fees;
         this.examRegistrations = examRegistrations;
     }
 
-    public Set<Fee> getFees()
+    public List<Fee> getFees()
     {
         return fees;
     }
 
-    public void setFees(Set<Fee> fees)
+    public void setFees(List<Fee> fees)
     {
         this.fees = fees;
     }
 
-    public Set<ExamRegistration> getExamRegistrations()
+    public List<ExamRegistration> getExamRegistrations()
     {
         return examRegistrations;
     }
 
-    public void setExamRegistrations(Set<ExamRegistration> examRegistrations)
+    public void setExamRegistrations(List<ExamRegistration> examRegistrations)
     {
         this.examRegistrations = examRegistrations;
     }

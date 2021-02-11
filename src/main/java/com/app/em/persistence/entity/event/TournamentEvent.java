@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.Set;
+import java.util.List;
 
 
 @Entity
@@ -22,28 +22,23 @@ public class TournamentEvent extends Event
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "tournament_event_id")
-    private Set<RoomType> roomTypes;
+    private List<RoomType> roomTypes;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "tournament_event_id")
-    private Set<StayPeriod> stayPeriods;
+    private List<StayPeriod> stayPeriods;
 
     @Column(name = "fee")
     private Float fee;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "tournament_event_id")
-    private Set<WeightAgeCategory> weightAgeCategories;
-
-//    @JsonManagedReference
-//    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-//    @JoinColumn(name = "tournament_event_id")
-//    private Set<TournamentRegistration> tournamentRegistrations;
+    private List<WeightAgeCategory> weightAgeCategories;
 
     @JsonManagedReference(value = "team_tournament_event_id")
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "tournament_event_id")
-    private Set<Team> teams;
+    private List<Team> teams;
 
 
     public TournamentEvent() {  }
@@ -57,12 +52,11 @@ public class TournamentEvent extends Event
                            Date endDate,
                            Boolean sayonaraMeeting,
                            Boolean accommodation,
-                           Set<RoomType> roomTypes,
-                           Set<StayPeriod> stayPeriods,
+                           List<RoomType> roomTypes,
+                           List<StayPeriod> stayPeriods,
                            Float fee,
-                           Set<WeightAgeCategory> weightAgeCategories,
-    //                       Set<TournamentRegistration> tournamentRegistrations,
-                           Set<Team> teams
+                           List<WeightAgeCategory> weightAgeCategories,
+                           List<Team> teams
     )
     {
         super(id, eventName, eventDescription, eventPicturePath, dateCreated, startDate, endDate);
@@ -72,7 +66,6 @@ public class TournamentEvent extends Event
         this.stayPeriods = stayPeriods;
         this.fee = fee;
         this.weightAgeCategories = weightAgeCategories;
-        //this.tournamentRegistrations = tournamentRegistrations;
         this.teams = teams;
     }
 
@@ -96,22 +89,22 @@ public class TournamentEvent extends Event
         this.accommodation = accommodation;
     }
 
-    public Set<RoomType> getRoomTypes()
+    public List<RoomType> getRoomTypes()
     {
         return roomTypes;
     }
 
-    public void setRoomTypes(Set<RoomType> roomTypes)
+    public void setRoomTypes(List<RoomType> roomTypes)
     {
         this.roomTypes = roomTypes;
     }
 
-    public Set<StayPeriod> getStayPeriods()
+    public List<StayPeriod> getStayPeriods()
     {
         return stayPeriods;
     }
 
-    public void setStayPeriods(Set<StayPeriod> stayPeriods)
+    public void setStayPeriods(List<StayPeriod> stayPeriods)
     {
         this.stayPeriods = stayPeriods;
     }
@@ -126,33 +119,22 @@ public class TournamentEvent extends Event
         this.fee = fee;
     }
 
-    public Set<WeightAgeCategory> getWeightAgeCategories()
+    public List<WeightAgeCategory> getWeightAgeCategories()
     {
         return weightAgeCategories;
     }
 
-    public void setWeightAgeCategories(Set<WeightAgeCategory> weightAgeCategories)
+    public void setWeightAgeCategories(List<WeightAgeCategory> weightAgeCategories)
     {
         this.weightAgeCategories = weightAgeCategories;
     }
 
-//    public Set<TournamentRegistration> getTournamentRegistrations()
-//    {
-//        return tournamentRegistrations;
-//    }
-//
-//    public void setTournamentRegistrations(Set<TournamentRegistration> tournamentRegistrations)
-//    {
-//        this.tournamentRegistrations = tournamentRegistrations;
-//    }
-
-
-    public Set<Team> getTeams()
+    public List<Team> getTeams()
     {
         return teams;
     }
 
-    public void setTeams(Set<Team> teams)
+    public void setTeams(List<Team> teams)
     {
         this.teams = teams;
     }
