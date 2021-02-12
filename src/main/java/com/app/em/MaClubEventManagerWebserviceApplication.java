@@ -7,6 +7,7 @@ import org.springframework.context.annotation.PropertySource;
 
 @SpringBootApplication
 @PropertySource("classpath:db-access.properties")
+@PropertySource("classpath:mail-sender.properties")
 public class MaClubEventManagerWebserviceApplication {
 
 	public static void main(String[] args) {

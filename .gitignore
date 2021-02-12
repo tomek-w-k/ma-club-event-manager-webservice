@@ -40,3 +40,7 @@ build/
 
 ## Liquibase changelog file ##
 /src/main/resources/liquibase/changelog.xml
+
+## Mail sender service property file ##
+/src/main/resources/mail-sender.properties
+
