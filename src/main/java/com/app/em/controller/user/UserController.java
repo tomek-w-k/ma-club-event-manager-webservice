@@ -193,6 +193,18 @@ public class UserController
         if ( userByEmailOptional.isPresent() && (!user.getEmail().equals(userByIdOptional.get().getEmail()) ) )
             return ResponseEntity.badRequest().body(new MessageResponse("email_already_taken"));
 
+        // Checks if the user specified by email already has admin privileges
+        Boolean isAdmin = userByEmailOptional.get().getRoles().stream().anyMatch(role -> role.getRoleName().toString().equals("ROLE_ADMIN"));
+
+        // Checks if incoming user has inserted an admin role in its roles array
+        Boolean containsAdmin = false;
+        if ( user.getRoles() != null )
+            containsAdmin = user.getRoles().stream().anyMatch(role -> role.getRoleName().toString().equals("ROLE_ADMIN"));
+
+        // If the user is not originally an admin and contains admin in its array, then return
+        if (!isAdmin && containsAdmin )
+            return ResponseEntity.badRequest().body(new MessageResponse("Remove ROLE_ADMIN from json."));
+
         if ( user.getRank() != null )
             user.setRank( rankRepository.findById(user.getRank().getId()).orElseGet(() -> rankRepository.save(user.getRank())) );
 
