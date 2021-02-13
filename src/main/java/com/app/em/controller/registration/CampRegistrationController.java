@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
@@ -43,7 +44,7 @@ public class CampRegistrationController
     ObjectMapper objectMapper;
 
 
-    // CREATE : addCampRegistration()
+    @PreAuthorize("hasRole('USER')")
     @PostMapping("/camp_registrations")
     public ResponseEntity addCampRegistration(@RequestBody CampRegistration campRegistration)
     {
@@ -64,9 +65,7 @@ public class CampRegistrationController
         return ResponseEntity.ok(savedCampRegistration);
     }
 
-    // READ :   getCampRegistrationById(),
-    //          getCampRegistrationsForCamp()
-    //          getCampRegistrationsForUser()
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/camp_registrations/{id}")
     public ResponseEntity getCampRegistrationById(@PathVariable Long id)
     {
@@ -77,6 +76,7 @@ public class CampRegistrationController
         return ResponseEntity.ok( campRegistrationOptional.get() );
     }
 
+    @PreAuthorize("hasRole('USER')")
     @GetMapping(value = "/camp_events/{campEventId}/camp_registrations", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getCampRegistrationsForCamp(@PathVariable Long campEventId) throws JsonProcessingException
     {
@@ -88,6 +88,7 @@ public class CampRegistrationController
         return ResponseEntity.ok( objectMapper.writeValueAsString(campRegistrationsOptional.get()) );
     }
 
+    @PreAuthorize("hasRole('USER')")
     @GetMapping(value = "/users/{userId}/camp_registrations", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getCampRegistrationsForUser(@PathVariable Long userId) throws JsonProcessingException
     {
@@ -99,6 +100,7 @@ public class CampRegistrationController
         return ResponseEntity.ok( objectMapper.writeValueAsString(campRegistrationsOptional.get()) );
     }
 
+    @PreAuthorize("hasRole('USER')")
     @GetMapping(value = "/camp_events/{campEventId}/clothing_sizes", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getClothingSizesForCampEvent(@PathVariable Long campEventId) throws JsonProcessingException
     {
@@ -109,7 +111,7 @@ public class CampRegistrationController
         return ResponseEntity.ok( objectMapper.writeValueAsString(clothingSizesOptional.get()) );
     }
 
-    // UPDATE :
+    @PreAuthorize("hasRole('USER')")
     @PutMapping("/camp_registrations")
     public ResponseEntity updateCampRegistration(@RequestBody CampRegistration campRegistration)
     {
@@ -127,7 +129,7 @@ public class CampRegistrationController
         return ResponseEntity.ok(updatedCampRegistration);
     }
 
-    // DELETE : deleteCampRegistration()
+    @PreAuthorize("hasRole('USER')")
     @DeleteMapping("/camp_registrations/{id}")
     public ResponseEntity deleteCampRegistration(@PathVariable Long id)
     {
@@ -140,6 +142,7 @@ public class CampRegistrationController
         return ResponseEntity.ok().build();
     }
 
+    @PreAuthorize("hasRole('USER')")
     @GetMapping(value = "/clothing_sizes/{clothingSizeId}/camp_registrations")
     public ResponseEntity getCampRegistrationsCountForClothingSize(@PathVariable Integer clothingSizeId)
     {

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,6 +25,7 @@ public class ClubController
     ObjectMapper objectMapper;
 
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/clubs/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getClub(@PathVariable Integer id)
     {
@@ -33,20 +35,14 @@ public class ClubController
     }
 
     @GetMapping(value = "/clubs", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity getAllClubs() throws JsonProcessingException
+    public ResponseEntity getAllClubs()
     {
         return Optional.ofNullable(clubRepository.findAll())
-                .map(this::writeToResponseEntity)
+                .map(this::writeListToResponseEntity)
                 .orElseGet(() -> ResponseEntity.notFound().build());
-
-
-//        Optional<List<Club>> clubsOptional = Optional.ofNullable(clubRepository.findAll());
-//        if ( clubsOptional.isEmpty() )
-//            return ResponseEntity.notFound().build();
-//
-//        return ResponseEntity.ok(objectMapper.writeValueAsString(clubsOptional.get()));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/clubs/{id}")
     public ResponseEntity deleteClub(@PathVariable Integer id)
     {
@@ -56,10 +52,9 @@ public class ClubController
                     return ResponseEntity.ok().build();
                 })
                 .orElseGet(() -> ResponseEntity.ok().build());
-
     }
 
-    private ResponseEntity writeToResponseEntity(List<?> items)
+    private ResponseEntity writeListToResponseEntity(List<?> items)
     {
         try {
             return ResponseEntity.ok(objectMapper.writeValueAsString(items));

@@ -4,6 +4,8 @@ import com.app.em.persistence.entity.event.TournamentEvent;
 import com.app.em.persistence.entity.team.Team;
 import com.app.em.persistence.entity.user.*;
 import com.app.em.persistence.repository.event.TournamentEventRepository;
+import com.app.em.persistence.repository.registration.CampRegistrationRepository;
+import com.app.em.persistence.repository.registration.ExamRegistrationRepository;
 import com.app.em.persistence.repository.registration.TeamRepository;
 import com.app.em.persistence.repository.user.*;
 import com.app.em.security.payload.response.MessageResponse;
@@ -16,8 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -44,6 +45,12 @@ public class UserController
     BranchChiefRepository branchChiefRepository;
 
     @Autowired
+    ExamRegistrationRepository examRegistrationRepository;
+
+    @Autowired
+    CampRegistrationRepository campRegistrationRepository;
+
+    @Autowired
     TournamentEventRepository tournamentEventRepository;
 
     @Autowired
@@ -53,6 +60,7 @@ public class UserController
     ObjectMapper objectMapper;
 
 
+    @PreAuthorize("hasRole('TRAINER')")
     @PostMapping("/users")
     public ResponseEntity addUser(@RequestBody User user) throws JsonProcessingException
     {
@@ -70,11 +78,17 @@ public class UserController
             user.setBranchChief( branchChiefRepository.findById(user.getBranchChief().getId()).orElseGet(() ->
                     branchChiefRepository.save(user.getBranchChief())) );
 
+        Set<Role> rolesForUser = new HashSet<>();
+        Role roleUser = roleRepository.findByRoleName(RoleEnum.ROLE_USER).orElseGet(() -> new Role(RoleEnum.ROLE_USER));
+        rolesForUser.add(roleUser);
+        user.setRoles(rolesForUser);
+
         User savedUser = userRepository.save(user);
 
         return ResponseEntity.ok(savedUser);
     }
 
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/users/{id}")
     public ResponseEntity<User> getUser(@PathVariable Long id)
     {
@@ -85,6 +99,7 @@ public class UserController
         return ResponseEntity.ok( userOptional.get() );
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getAllUsers() throws JsonProcessingException
     {
@@ -95,6 +110,7 @@ public class UserController
         return ResponseEntity.ok( objectMapper.writeValueAsString(usersOptional.get()) );
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/tournament_events/{tournamentEventId}/users/{mode}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getUsersForTournament(@PathVariable Long tournamentEventId, @PathVariable String mode) throws JsonProcessingException
     {
@@ -159,6 +175,7 @@ public class UserController
         return ResponseEntity.ok( objectMapper.writeValueAsString(usersOptional.get()) );
     }
 
+    @PreAuthorize("hasRole('USER')")
     @PutMapping("/users")
     public ResponseEntity updateUser(@RequestBody User user)
     {
@@ -191,6 +208,7 @@ public class UserController
         return ResponseEntity.ok( updatedUser );
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/users/{id}")
     public ResponseEntity deleteUser(@PathVariable Long id)
     {

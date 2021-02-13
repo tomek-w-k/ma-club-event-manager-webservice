@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.SQLIntegrityConstraintViolationException;
@@ -62,7 +63,7 @@ public class TournamentRegistrationController
     ObjectMapper objectMapper;
 
 
-    // CREATE :     addTournamentRegistration()
+    @PreAuthorize("hasRole('TRAINER')")
     @PostMapping("/teams/{teamId}/tournament_registrations")
     public ResponseEntity addTournamentRegistration(@RequestBody TournamentRegistration tournamentRegistration, @PathVariable Long teamId)
     {
@@ -109,13 +110,7 @@ public class TournamentRegistrationController
         return ResponseEntity.ok(savedTournamentRegistration);
     }
 
-    // READ :       getTournamentRegistrationById()             v
-    //              getTournamentRegistrationsForTournament()   v
-    //              getTournamentRegistrationsForUser()         v
-    //              getTournamentRegistrationsForTeam()         v
-    //              getRoomTypesForTournament()                 v
-    //              getStayPeriodsForTournament()               v
-    //              getWeightAgeCategoriesForTournament()       v
+    @PreAuthorize("hasRole('TRAINER')")
     @GetMapping("/tournament_registrations/{id}")
     public ResponseEntity getTournamentRegistrationById(@PathVariable Long id)
     {
@@ -138,6 +133,7 @@ public class TournamentRegistrationController
         return ResponseEntity.ok( registrationJson.toString() );
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/tournament_events/{tournamentEventId}/tournament_registrations", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getTournamentRegistrationsForTournament(@PathVariable Long tournamentEventId) throws JsonProcessingException
     {
@@ -173,6 +169,7 @@ public class TournamentRegistrationController
         return ResponseEntity.ok( registrationsString );
     }
 
+    @PreAuthorize("hasRole('TRAINER')")
     @GetMapping(value = "/users/{userId}/tournament_registrations", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getTournamentRegistrationsForUser(@PathVariable Long userId) throws JsonProcessingException
     {
@@ -184,6 +181,7 @@ public class TournamentRegistrationController
         return ResponseEntity.ok( objectMapper.writeValueAsString(tournamentRegistrationsOptional.get()) );
     }
 
+    @PreAuthorize("hasRole('TRAINER')")
     @GetMapping(value = "teams/{teamId}/tournament_registrations", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getTournamentRegistrationsForTeam(@PathVariable Long teamId) throws JsonProcessingException
     {
@@ -195,6 +193,7 @@ public class TournamentRegistrationController
         return ResponseEntity.ok( objectMapper.writeValueAsString(tournamentRegistrationsOptional.get()) );
     }
 
+    @PreAuthorize("hasRole('TRAINER')")
     @GetMapping(value = "/tournament_events/{tournamentEventId}/room_types", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getRoomTypesForTournament(@PathVariable Long tournamentEventId) throws JsonProcessingException
     {
@@ -205,6 +204,7 @@ public class TournamentRegistrationController
         return ResponseEntity.ok( objectMapper.writeValueAsString(roomTypesOptional.get()) );
     }
 
+    @PreAuthorize("hasRole('TRAINER')")
     @GetMapping(value = "/tournament_events/{tournamentEventId}/stay_periods")
     public ResponseEntity getStayPeriodsForTournament(@PathVariable Long tournamentEventId) throws JsonProcessingException
     {
@@ -215,6 +215,7 @@ public class TournamentRegistrationController
         return ResponseEntity.ok( objectMapper.writeValueAsString(stayPeriodsOptional.get()) );
     }
 
+    @PreAuthorize("hasRole('TRAINER')")
     @GetMapping(value = "/tournament_events/{tournamentEventId}/weight_age_categories")
     public ResponseEntity getWeightAgeCategoriesForTournament(@PathVariable Long tournamentEventId) throws JsonProcessingException
     {
@@ -225,7 +226,7 @@ public class TournamentRegistrationController
         return ResponseEntity.ok( objectMapper.writeValueAsString(weightAgeCategoriesOptional.get()) );
     }
 
-    // UPDATE :     updateTournamentRegistration()
+    @PreAuthorize("hasRole('TRAINER')")
     @PutMapping("/teams/{teamId}/tournament_registrations")
     public ResponseEntity updateTournamentRegistration(@RequestBody TournamentRegistration tournamentRegistration)
     {
@@ -238,7 +239,7 @@ public class TournamentRegistrationController
         return ResponseEntity.ok(updatedTournamentRegistration);
     }
 
-    // DELETE :     deleteTournamentRegistration()
+    @PreAuthorize("hasRole('TRAINER')")
     @DeleteMapping("/tournament_registrations/{id}")
     public ResponseEntity deleteTournamentRegistration(@PathVariable Long id)
     {
@@ -251,6 +252,7 @@ public class TournamentRegistrationController
         return ResponseEntity.ok().build();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/stay_periods/{stayPeriodId}/tournament_registrations")
     public ResponseEntity getTournamentRegistrationsCountForStayPeriod(@PathVariable Integer stayPeriodId)
     {
@@ -258,6 +260,7 @@ public class TournamentRegistrationController
         return ResponseEntity.ok(Collections.singletonMap("stayPeriodCount", stayPeriodCount));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/room_types/{roomTypeId}/tournament_registrations")
     public ResponseEntity getTournamentRegistrationsCountForRoomType(@PathVariable Integer roomTypeId)
     {
@@ -265,6 +268,7 @@ public class TournamentRegistrationController
         return ResponseEntity.ok(Collections.singletonMap("roomTypeCount", roomTypeCount));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/weight_age_categories/{weightAgeCategoryId}/tournament_registrations")
     public ResponseEntity getTournamentRegistrationsCountForWeightAgeCategory(@PathVariable Integer weightAgeCategoryId)
     {

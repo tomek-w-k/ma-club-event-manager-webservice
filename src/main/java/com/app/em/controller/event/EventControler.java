@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.ConstraintViolationException;
@@ -45,24 +46,28 @@ public class EventControler
 
     // - - - - EXAM EVENT - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/exam_events")
     public ResponseEntity addExamEvent(@RequestBody ExamEvent examEvent)
     {
         return addEvent(examEvent);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/exam_events/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getExamEvent(@PathVariable Long id)
     {
         return getEvent(id);
     }
 
+    @PreAuthorize("hasRole('USER')")
     @GetMapping(value = "/exam_events", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getAllExamEvents() throws JsonProcessingException
     {
         return getAllEvents(ExamEvent.class);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/exam_events")
     public ResponseEntity updateExamEvent(@RequestBody ExamEvent examEvent)
     {
@@ -72,24 +77,28 @@ public class EventControler
 
     // - - - - CAMP EVENT - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/camp_events")
     public ResponseEntity addCampEvent(@RequestBody CampEvent campEvent)
     {
         return addEvent(campEvent);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/camp_events/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getCampEvent(@PathVariable Long id)
     {
         return getEvent(id);
     }
 
+    @PreAuthorize("hasRole('USER')")
     @GetMapping(value = "/camp_events", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getAllCampEvents() throws JsonProcessingException
     {
         return getAllEvents(CampEvent.class);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/camp_events")
     public ResponseEntity updateCampEvent(@RequestBody CampEvent campEvent)
     {
@@ -99,24 +108,28 @@ public class EventControler
 
     // - - - - TOURNAMENT EVENT - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/tournament_events")
     public ResponseEntity addTournamentEvent(@RequestBody TournamentEvent tournamentEvent)
     {
         return addEvent(tournamentEvent);
     }
 
+    @PreAuthorize("hasRole('TRAINER')")
     @GetMapping(value = "/tournament_events/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getTournamentEvent(@PathVariable Long id)
     {
         return getEvent(id);
     }
 
+    @PreAuthorize("hasRole('USER')")
     @GetMapping(value = "/tournament_events", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getAllTournamentEvents() throws JsonProcessingException
     {
         return getAllEvents(TournamentEvent.class);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/tournament_events")
     public ResponseEntity updateTournamentEvent(@RequestBody TournamentEvent tournamentEvent)
     {
@@ -126,12 +139,14 @@ public class EventControler
 
     // - - - - MISC - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    @PreAuthorize("hasRole('USER')")
     @GetMapping(value = "/events", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getAllEventsForWall() throws JsonProcessingException
     {
         return getAllEvents();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/events/{id}")
     public ResponseEntity removeEvent(@PathVariable Long id)
     {

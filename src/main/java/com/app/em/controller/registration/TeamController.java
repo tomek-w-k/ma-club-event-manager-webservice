@@ -16,6 +16,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.web.firewall.RequestRejectedException;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,7 +40,7 @@ public class TeamController
     ObjectMapper objectMapper;
 
 
-    // CREATE ::    addTeam()
+    @PreAuthorize("hasRole('TRAINER')")
     @PostMapping(value = "/tournament_events/{tournamentEventId}/teams", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity addTeam(@RequestBody Team team, @PathVariable Long tournamentEventId)
     {
@@ -60,10 +61,9 @@ public class TeamController
         Team savedTeam = teamRepository.save(team);
 
         return ResponseEntity.ok(savedTeam);
-        //return ResponseEntity.ok().build();
     }
 
-    // READ ::      getTeam(), getAllTeams()
+    @PreAuthorize("hasRole('TRAINER')")
     @GetMapping(value = "/teams/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getTeam(@PathVariable Long id)
     {
@@ -85,6 +85,7 @@ public class TeamController
         return ResponseEntity.ok( teamJson.toString() );
     }
 
+    @PreAuthorize("hasRole('TRAINER')")
     @GetMapping(value = "/tournament_events/{tournamentEventId}/teams", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getTeamsForEvent(@PathVariable Long tournamentEventId) throws JsonProcessingException
     {
@@ -99,6 +100,7 @@ public class TeamController
         return ResponseEntity.ok( objectMapper.writeValueAsString(teamsOptional.get()) );
     }
 
+    @PreAuthorize("hasRole('TRAINER')")
     @GetMapping(value = "/user/{userId}/teams", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getAllTeamsForUser(@PathVariable Long userId) throws JsonProcessingException
     {
@@ -126,7 +128,7 @@ public class TeamController
         return ResponseEntity.ok( teamsString );
     }
 
-    // UPDATE ::    updateTeam()
+    @PreAuthorize("hasRole('TRAINER')")
     @PutMapping(value = "/tournament_events/{tournamentEventId}/teams", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity updateTeam(@RequestBody Team team)
     {
@@ -139,7 +141,7 @@ public class TeamController
         return ResponseEntity.ok(updatedTeam);
     }
 
-    // DELETE ::    deleteTeam()
+    @PreAuthorize("hasRole('TRAINER')")
     @DeleteMapping("/user/{userId}/teams/{id}")
     public ResponseEntity deleteTeam(@PathVariable Long id)
     {

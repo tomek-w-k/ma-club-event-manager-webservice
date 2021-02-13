@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,7 +24,7 @@ public class ClubDocumentController
     @Autowired
     ObjectMapper objectMapper;
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/club_documents", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity addClubDocument(@RequestBody ClubDocument clubDocument)
     {
@@ -31,6 +32,7 @@ public class ClubDocumentController
         return ResponseEntity.ok( savedClubDocument );
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/club_documents/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getClubDocument(@PathVariable Integer id)
     {
@@ -41,6 +43,7 @@ public class ClubDocumentController
         return ResponseEntity.ok(clubDocumentOptional.get());
     }
 
+    @PreAuthorize("hasRole('USER')")
     @GetMapping(value = "/club_documents", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getAllClubDocuments() throws JsonProcessingException
     {
@@ -51,6 +54,7 @@ public class ClubDocumentController
         return ResponseEntity.ok( objectMapper.writeValueAsString( clubDocumentsOptional.get() ) );
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(value = "/club_documents", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity updateClubDocument(@RequestBody ClubDocument clubDocument)
     {
@@ -63,6 +67,7 @@ public class ClubDocumentController
         return ResponseEntity.ok( updatedClubDocument );
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/club_documents/{id}")
     public ResponseEntity deleteClubDocument(@PathVariable Integer id)
     {

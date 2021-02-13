@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
@@ -36,7 +37,7 @@ public class ExamRegistrationController
     ObjectMapper objectMapper;
 
 
-    // CREATE : addExamRegistration()
+    @PreAuthorize("hasRole('USER')")
     @PostMapping("/exam_registrations")
     public ResponseEntity addExamRegistration(@RequestBody ExamRegistration examRegistration)
     {
@@ -54,9 +55,7 @@ public class ExamRegistrationController
         return ResponseEntity.ok(savedExamRegistration);
     }
 
-    // READ :   getExamRegistrationById(),
-    //          getExamRegistrationsForExam()
-    //          getExamRegistrationsForUser()
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/exam_registrations/{id}")
     public ResponseEntity getExamRegistrationById(@PathVariable Long id)
     {
@@ -67,6 +66,7 @@ public class ExamRegistrationController
         return ResponseEntity.ok( examRegistrationOptional.get() );
     }
 
+    @PreAuthorize("hasRole('USER')")
     @GetMapping(value = "/exam_events/{examEventId}/exam_registrations", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getExamRegistrationsForExam(@PathVariable Long examEventId) throws JsonProcessingException
     {
@@ -78,6 +78,7 @@ public class ExamRegistrationController
         return ResponseEntity.ok( objectMapper.writeValueAsString(examRegistrationsOptional.get()) );
     }
 
+    @PreAuthorize("hasRole('USER')")
     @GetMapping(value = "/users/{userId}/exam_registrations", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getExamRegistrationsForUser(@PathVariable Long userId) throws JsonProcessingException
     {
@@ -89,7 +90,7 @@ public class ExamRegistrationController
         return ResponseEntity.ok( objectMapper.writeValueAsString(examRegistrationsOptional.get()) );
     }
 
-    // UPDATE :
+    @PreAuthorize("hasRole('USER')")
     @PutMapping("/exam_registrations")
     public ResponseEntity updateExamRegistration(@RequestBody ExamRegistration examRegistration)
     {
@@ -107,7 +108,7 @@ public class ExamRegistrationController
         return ResponseEntity.ok(updatedExamRegistration);
     }
 
-    // DELETE : deleteExamRegistration()
+    @PreAuthorize("hasRole('USER')")
     @DeleteMapping("/exam_registrations/{id}")
     public ResponseEntity deleteExamRegistration(@PathVariable Long id)
     {
