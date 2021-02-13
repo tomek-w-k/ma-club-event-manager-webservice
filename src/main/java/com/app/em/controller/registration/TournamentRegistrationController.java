@@ -154,8 +154,12 @@ public class TournamentRegistrationController
                                     {
                                         registrationJson = new JSONObject(objectMapper.writeValueAsString(registration));
                                         registrationJson.put("teamId", registration.getTeam().getId());
-                                        registrationJson.put("trainerFullName", registration.getTeam().getTrainer().getFullName());
-                                        registrationJson.put("trainerClubName", registration.getTeam().getTrainer().getClub().getClubName());
+                                        registrationJson.put("trainerFullName",
+                                                registration.getTeam().getTrainer() != null ?
+                                                        registration.getTeam().getTrainer().getFullName() : "none");
+                                        registrationJson.put("trainerClubName",
+                                                registration.getTeam().getTrainer().getClub() != null ?
+                                                        registration.getTeam().getTrainer().getClub().getClubName() : "none");
                                     }
                                     catch (JsonProcessingException e) { throw new RuntimeException(e); }
                                     catch (JSONException e) { throw new RuntimeException(e); }
@@ -173,12 +177,28 @@ public class TournamentRegistrationController
     @GetMapping(value = "/users/{userId}/tournament_registrations", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getTournamentRegistrationsForUser(@PathVariable Long userId) throws JsonProcessingException
     {
-        Optional<List<TournamentRegistration>> tournamentRegistrationsOptional = Optional.ofNullable(
-                tournamentRegistrationRepository.findByUserId(userId) );
+        Optional<List<TournamentRegistration>> tournamentRegistrationsOptional = Optional.ofNullable(tournamentRegistrationRepository.findByUserId(userId) );
         if ( tournamentRegistrationsOptional.isEmpty() )
             return ResponseEntity.notFound().build();
 
-        return ResponseEntity.ok( objectMapper.writeValueAsString(tournamentRegistrationsOptional.get()) );
+        List<JSONObject> jsonObjects = tournamentRegistrationsOptional.get().stream().map(registration -> {
+            JSONObject registrationJson;
+            try
+            {
+                registrationJson = new JSONObject(objectMapper.writeValueAsString(registration));
+                registrationJson.put("eventId", registration.getTeam().getTournamentEvent().getId());
+                registrationJson.put("eventName", registration.getTeam().getTournamentEvent().getEventName());
+            }
+            catch (JsonProcessingException e) { throw new RuntimeException((e)); }
+            catch (JSONException e) { throw new RuntimeException(e); }
+
+            return registrationJson;
+        })
+        .collect(Collectors.toList());
+
+        String registrationsString = new JSONArray(jsonObjects).toString();
+
+        return ResponseEntity.ok( registrationsString );
     }
 
     @PreAuthorize("hasRole('TRAINER')")

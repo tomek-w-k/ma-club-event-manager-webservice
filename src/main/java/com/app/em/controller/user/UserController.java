@@ -11,6 +11,7 @@ import com.app.em.persistence.repository.user.*;
 import com.app.em.security.payload.response.MessageResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -68,6 +69,14 @@ public class UserController
         if ( userEmailOptional.isPresent() )
             return userAlreadyExists(user.getEmail());
 
+        Boolean containsAdmin = false;
+        if ( user.getRoles() != null )
+            containsAdmin = user.getRoles().stream().anyMatch(role -> role.getRoleName().toString().equals("ROLE_ADMIN"));
+
+        // If the user contains admin in its array, then return
+        if ( containsAdmin )
+            return ResponseEntity.badRequest().body(new MessageResponse("Remove ROLE_ADMIN from json."));
+
         if ( user.getRank() != null )
             user.setRank( rankRepository.findById(user.getRank().getId()).orElseGet(() -> rankRepository.save(user.getRank())) );
 
@@ -77,11 +86,6 @@ public class UserController
         if ( user.getBranchChief() != null )
             user.setBranchChief( branchChiefRepository.findById(user.getBranchChief().getId()).orElseGet(() ->
                     branchChiefRepository.save(user.getBranchChief())) );
-
-        Set<Role> rolesForUser = new HashSet<>();
-        Role roleUser = roleRepository.findByRoleName(RoleEnum.ROLE_USER).orElseGet(() -> new Role(RoleEnum.ROLE_USER));
-        rolesForUser.add(roleUser);
-        user.setRoles(rolesForUser);
 
         User savedUser = userRepository.save(user);
 
@@ -231,6 +235,17 @@ public class UserController
         userRepository.deleteById( id );
 
         return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping(value = "/roles", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity getRoles() throws JsonProcessingException
+    {
+        Optional<List<Role>> rolesOptional = Optional.ofNullable(roleRepository.findAll());
+        if ( rolesOptional.isEmpty() )
+            return ResponseEntity.notFound().build();
+
+        return ResponseEntity.ok( objectMapper.writeValueAsString(rolesOptional.get()) );
     }
 
     private ResponseEntity userAlreadyExists(String who)
