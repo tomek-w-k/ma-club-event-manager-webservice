@@ -4,23 +4,20 @@ import com.app.em.persistence.entity.event.CampEvent;
 import com.app.em.persistence.entity.event.Event;
 import com.app.em.persistence.entity.event.ExamEvent;
 import com.app.em.persistence.entity.event.TournamentEvent;
-import com.app.em.persistence.entity.registration.Registration;
 import com.app.em.persistence.repository.event.CampEventRepository;
 import com.app.em.persistence.repository.event.EventRepository;
 import com.app.em.persistence.repository.event.ExamEventRepository;
 import com.app.em.persistence.repository.event.TournamentEventRepository;
 import com.app.em.security.payload.response.MessageResponse;
+import com.app.em.utils.ListToResponseEntityWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import javax.validation.ConstraintViolationException;
 import java.sql.SQLIntegrityConstraintViolationException;
-import java.util.List;
 import java.util.Optional;
 
 
@@ -41,7 +38,7 @@ public class EventControler
     TournamentEventRepository tournamentEventRepository;
 
     @Autowired
-    ObjectMapper objectMapper;
+    ListToResponseEntityWrapper listToResponseEntityWrapper;
 
 
     // - - - - EXAM EVENT - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -166,85 +163,60 @@ public class EventControler
 
     private <T extends Event> ResponseEntity addEvent(T event)
     {
-        T savedEvent = null;
         try {
-            savedEvent = eventRepository.save(event);
+            return ResponseEntity.ok( eventRepository.save(event) );
         }
         catch(ConstraintViolationException e) {
             return ResponseEntity.badRequest().body(
                     new MessageResponse("The submitted data is not valid. Please correct it and try again."));
         }
-
-        return ResponseEntity.ok(savedEvent);
     }
 
     private ResponseEntity getEvent(Long id)
     {
-        Optional<Event> eventOptional = eventRepository.findById(id);
-        if ( eventOptional.isEmpty() )
-            return ResponseEntity.notFound().build();
-
-        return ResponseEntity.ok( eventOptional.get() );
+        return ResponseEntity.of( eventRepository.findById(id) );
     }
 
     private ResponseEntity getAllEvents() throws JsonProcessingException
     {
-        Optional<List<Event>> eventsOptional = Optional.ofNullable( eventRepository.findAllByOrderByDateCreatedDesc() );
-        if ( eventsOptional.isEmpty() )
-            return ResponseEntity.notFound().build();
-
-        return ResponseEntity.ok( objectMapper.writeValueAsString(eventsOptional.get()) );
+        return Optional.ofNullable( eventRepository.findAllByOrderByDateCreatedDesc() )
+            .map(listToResponseEntityWrapper::wrapListInResponseEntity)
+            .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     private ResponseEntity getAllEvents(Class<? extends Event> eventType) throws JsonProcessingException
     {
         if ( eventType.isAssignableFrom(ExamEvent.class) )
-        {
-            Optional<List<ExamEvent>> eventsOptional = Optional.ofNullable( examEventRepository.findAllByOrderByDateCreatedDesc() );
-            if ( eventsOptional.isEmpty() )
-                return ResponseEntity.notFound().build();
+            return Optional.ofNullable( examEventRepository.findAllByOrderByDateCreatedDesc() )
+                    .map(listToResponseEntityWrapper::wrapListInResponseEntity)
+                    .orElseGet(() -> ResponseEntity.notFound().build());
 
-            return ResponseEntity.ok( objectMapper.writeValueAsString(eventsOptional.get()) );
-        }
         if ( eventType.isAssignableFrom(CampEvent.class) )
-        {
-            Optional<List<CampEvent>> eventsOptional = Optional.ofNullable( campEventRepository.findAllByOrderByDateCreatedDesc() );
-            if ( eventsOptional.isEmpty() )
-                return ResponseEntity.notFound().build();
+            return Optional.ofNullable( campEventRepository.findAllByOrderByDateCreatedDesc() )
+                    .map(listToResponseEntityWrapper::wrapListInResponseEntity)
+                    .orElseGet(() -> ResponseEntity.notFound().build());
 
-            return ResponseEntity.ok( objectMapper.writeValueAsString(eventsOptional.get()) );
-        }
         if ( eventType.isAssignableFrom(TournamentEvent.class) )
-        {
-            Optional<List<TournamentEvent>> eventsOptional = Optional.ofNullable( tournamentEventRepository.findAllByOrderByDateCreatedDesc() );
-            if ( eventsOptional.isEmpty() )
-                return ResponseEntity.notFound().build();
-
-            return ResponseEntity.ok( objectMapper.writeValueAsString(eventsOptional.get()) );
-        }
+            return Optional.ofNullable( tournamentEventRepository.findAllByOrderByDateCreatedDesc() )
+                    .map(listToResponseEntityWrapper::wrapListInResponseEntity)
+                    .orElseGet(() -> ResponseEntity.notFound().build());
 
         return ResponseEntity.notFound().build();
     }
 
     private  ResponseEntity updateEvent(Event event)
     {
-        Optional<Event> eventOptional = eventRepository.findById( event.getId() );
-        if ( eventOptional.isEmpty() )
-            return ResponseEntity.notFound().build();
-
-        Event updatedEvent = eventRepository.save(event);
-
-        return ResponseEntity.ok(updatedEvent);
+        return eventRepository.findById(event.getId())
+                .map(eventToUpdate -> ResponseEntity.ok(eventRepository.save(event)))
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     private ResponseEntity deleteEvent(Long id)
     {
-        Optional<Event> eventOptional = eventRepository.findById( id );
-        if ( eventOptional.isEmpty() )
-            return ResponseEntity.notFound().build();
-
-        eventRepository.deleteById(id);
-
-        return ResponseEntity.ok().build();
+        return eventRepository.findById(id)
+                .map(event -> {
+                    eventRepository.delete(event);
+                    return ResponseEntity.ok().build();
+                }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 }

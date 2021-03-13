@@ -61,7 +61,7 @@ public class ClubDocumentController
     {
         return clubDocumentRepository.findById(id)
                 .map(clubDocument -> {
-                    clubDocumentRepository.deleteById(id);
+                    clubDocumentRepository.delete(clubDocument);
                     return ResponseEntity.ok().build();
                 }).orElseGet(() -> ResponseEntity.notFound().build());
     }
