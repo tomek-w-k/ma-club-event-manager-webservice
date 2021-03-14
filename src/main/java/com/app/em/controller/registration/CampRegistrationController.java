@@ -1,15 +1,11 @@
 package com.app.em.controller.registration;
 
-import com.app.em.persistence.entity.event.CampEvent;
-import com.app.em.persistence.entity.event.ClothingSize;
 import com.app.em.persistence.entity.registration.CampRegistration;
-import com.app.em.persistence.entity.user.User;
 import com.app.em.persistence.repository.clothing_size.ClothingSizeRepository;
 import com.app.em.persistence.repository.event.CampEventRepository;
-import com.app.em.persistence.repository.event.EventRepository;
 import com.app.em.persistence.repository.registration.CampRegistrationRepository;
-import com.app.em.persistence.repository.user.UserRepository;
 import com.app.em.security.payload.response.MessageResponse;
+import com.app.em.utils.ListToResponseEntityWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONArray;
@@ -21,7 +17,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -42,124 +37,96 @@ public class CampRegistrationController
     ClothingSizeRepository clothingSizeRepository;
 
     @Autowired
-    UserRepository userRepository;
+    ObjectMapper objectMapper;
 
     @Autowired
-    ObjectMapper objectMapper;
+    ListToResponseEntityWrapper listToResponseEntityWrapper;
 
 
     @PreAuthorize("hasRole('USER')")
     @PostMapping("/camp_registrations")
     public ResponseEntity addCampRegistration(@RequestBody CampRegistration campRegistration)
     {
-        Optional<CampRegistration> campRegistrationOptional = campRegistrationRepository
-                .findByUserIdAndCampEventId(campRegistration.getUser().getId(), campRegistration.getCampEvent().getId());
-        if ( campRegistrationOptional.isPresent() )
-        {
-            Optional<User> userOptional = userRepository.findById(campRegistration.getUser().getId());
-            if (userOptional.isPresent())
-                campRegistration.setUser(userOptional.get()); // Because of "detached entity" error
-
-            Optional<CampEvent> campEventOptional = campEventRepository.findById(campRegistration.getCampEvent().getId());
-            if ( userOptional.isPresent() && campEventOptional.isPresent() )
-                return registrationAlreadyExists(userOptional.get().getFullName(), campEventOptional.get().getEventName());
-        }
-
-        CampRegistration savedCampRegistration = campRegistrationRepository.save(campRegistration);
-        return ResponseEntity.ok(savedCampRegistration);
+        return campRegistrationRepository.findByUserIdAndCampEventId(campRegistration.getUser().getId(), campRegistration.getCampEvent().getId())
+                .map(existingCampRegistration -> {
+                    return campEventRepository.findById(existingCampRegistration.getCampEvent().getId())
+                            .map(campEvent -> registrationAlreadyExists(existingCampRegistration.getUser().getFullName(), campEvent.getEventName()) )
+                            .orElseGet(() -> ResponseEntity.badRequest().build());
+                }).orElseGet(() -> ResponseEntity.ok( campRegistrationRepository.save(campRegistration) ));
     }
 
     @PreAuthorize("hasRole('USER')")
     @GetMapping("/camp_registrations/{id}")
     public ResponseEntity getCampRegistrationById(@PathVariable Long id)
     {
-        Optional<CampRegistration> campRegistrationOptional = campRegistrationRepository.findById(id);
-        if ( campRegistrationOptional.isEmpty() )
-            return ResponseEntity.notFound().build();
-
-        return ResponseEntity.ok( campRegistrationOptional.get() );
+        return ResponseEntity.of( campRegistrationRepository.findById(id) );
     }
 
     @PreAuthorize("hasRole('USER')")
     @GetMapping(value = "/camp_events/{campEventId}/camp_registrations", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getCampRegistrationsForCamp(@PathVariable Long campEventId) throws JsonProcessingException
     {
-        Optional<List<CampRegistration>> campRegistrationsOptional = Optional.ofNullable(
-                campRegistrationRepository.findByCampEventId(campEventId) );
-        if ( campRegistrationsOptional.isEmpty() )
-            return ResponseEntity.notFound().build();
-
-        return ResponseEntity.ok( objectMapper.writeValueAsString(campRegistrationsOptional.get()) );
+        return Optional.ofNullable(campRegistrationRepository.findByCampEventId(campEventId))
+                .map(listToResponseEntityWrapper::wrapListInResponseEntity)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PreAuthorize("hasRole('USER')")
     @GetMapping(value = "/users/{userId}/camp_registrations", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getCampRegistrationsForUser(@PathVariable Long userId) throws JsonProcessingException
     {
-        Optional<List<CampRegistration>> campRegistrationsOptional = Optional.ofNullable(campRegistrationRepository.findByUserId(userId) );
-        if ( campRegistrationsOptional.isEmpty() )
-            return ResponseEntity.notFound().build();
+        return Optional.ofNullable(campRegistrationRepository.findByUserId(userId))
+                .map(campRegistrations -> {
+                    List<JSONObject> jsonObjects = campRegistrations.stream()
+                        .map(registration -> {
+                            JSONObject registrationJson;
+                            try
+                            {
+                                registrationJson = new JSONObject(objectMapper.writeValueAsString(registration));
+                                registrationJson.put("eventId", registration.getCampEvent().getId());
+                                registrationJson.put("eventName", registration.getCampEvent().getEventName());
+                            }
+                            catch (JsonProcessingException e) { throw new RuntimeException((e)); }
+                            catch (JSONException e) { throw new RuntimeException(e); }
 
-        List<JSONObject> jsonObjects = campRegistrationsOptional.get().stream().map(registration -> {
-            JSONObject registrationJson;
-            try
-            {
-                registrationJson = new JSONObject(objectMapper.writeValueAsString(registration));
-                registrationJson.put("eventId", registration.getCampEvent().getId());
-                registrationJson.put("eventName", registration.getCampEvent().getEventName());
-            }
-            catch (JsonProcessingException e) { throw new RuntimeException((e)); }
-            catch (JSONException e) { throw new RuntimeException(e); }
+                            return registrationJson;
+                        }).collect(Collectors.toList());
 
-            return registrationJson;
-        })
-        .collect(Collectors.toList());
-
-        String registrationsString = new JSONArray(jsonObjects).toString();
-
-        return ResponseEntity.ok( registrationsString );
+                    return ResponseEntity.ok( new JSONArray(jsonObjects).toString() );
+                })
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PreAuthorize("hasRole('USER')")
     @GetMapping(value = "/camp_events/{campEventId}/clothing_sizes", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getClothingSizesForCampEvent(@PathVariable Long campEventId) throws JsonProcessingException
     {
-        Optional<List<ClothingSize>> clothingSizesOptional = Optional.ofNullable(clothingSizeRepository.findByCampEventId(campEventId));
-        if ( clothingSizesOptional.isEmpty() )
-            return ResponseEntity.notFound().build();
-
-        return ResponseEntity.ok( objectMapper.writeValueAsString(clothingSizesOptional.get()) );
+        return ResponseEntity.of( Optional.ofNullable(clothingSizeRepository.findByCampEventId(campEventId)) );
     }
 
     @PreAuthorize("hasRole('USER')")
     @PutMapping("/camp_registrations")
     public ResponseEntity updateCampRegistration(@RequestBody CampRegistration campRegistration)
     {
-        Optional<CampRegistration> campRegistrationOptional = campRegistrationRepository.findById( campRegistration.getId() );
-        if ( campRegistrationOptional.isEmpty() )
-            return ResponseEntity.notFound().build();
-
-        Optional<CampEvent> campEventOptional = campEventRepository.findCampEventByCampRegistrations(campRegistration);
-        if ( campEventOptional.isEmpty() )
-            return ResponseEntity.badRequest().body(new MessageResponse("There are no event specified for this registration."));
-
-        campRegistration.setCampEvent(campEventOptional.get());
-        CampRegistration updatedCampRegistration = campRegistrationRepository.save(campRegistration);
-
-        return ResponseEntity.ok(updatedCampRegistration);
+        return campRegistrationRepository.findById(campRegistration.getId())
+                .map(campRegistrationToUpdate -> {
+                    return campEventRepository.findCampEventByCampRegistrations(campRegistration)
+                            .map(campEvent -> {
+                                campRegistration.setCampEvent(campEvent);
+                                return ResponseEntity.ok(campRegistrationRepository.save(campRegistration));
+                            }).orElseGet(() -> ResponseEntity.notFound().build());
+                }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PreAuthorize("hasRole('USER')")
     @DeleteMapping("/camp_registrations/{id}")
     public ResponseEntity deleteCampRegistration(@PathVariable Long id)
     {
-        Optional<CampRegistration> campRegistrationOptional = campRegistrationRepository.findById(id);
-        if ( campRegistrationOptional.isEmpty() )
-            return ResponseEntity.notFound().build();
-
-        campRegistrationRepository.deleteById(id);
-
-        return ResponseEntity.ok().build();
+        return campRegistrationRepository.findById(id)
+                .map(campRegistration -> {
+                    campRegistrationRepository.delete(campRegistration);
+                    return ResponseEntity.ok().build();
+                }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PreAuthorize("hasRole('USER')")
