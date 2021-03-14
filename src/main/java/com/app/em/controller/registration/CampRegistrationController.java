@@ -93,8 +93,7 @@ public class CampRegistrationController
                         }).collect(Collectors.toList());
 
                     return ResponseEntity.ok( new JSONArray(jsonObjects).toString() );
-                })
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PreAuthorize("hasRole('USER')")
@@ -141,7 +140,7 @@ public class CampRegistrationController
 
     private ResponseEntity registrationAlreadyExists(String who, String forWhat)
     {
-        return ResponseEntity.status(HttpStatus.CONFLICT).
-                body(new MessageResponse("User " + who + " is already registered for " + forWhat));
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new MessageResponse("User " + who + " is already registered for " + forWhat));
     }
 }
