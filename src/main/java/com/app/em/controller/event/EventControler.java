@@ -59,7 +59,7 @@ public class EventControler
 
     @PreAuthorize("hasRole('USER')")
     @GetMapping(value = "/exam_events", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity getAllExamEvents() throws JsonProcessingException
+    public ResponseEntity getAllExamEvents()
     {
         return getAllEvents(ExamEvent.class);
     }
@@ -90,7 +90,7 @@ public class EventControler
 
     @PreAuthorize("hasRole('USER')")
     @GetMapping(value = "/camp_events", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity getAllCampEvents() throws JsonProcessingException
+    public ResponseEntity getAllCampEvents()
     {
         return getAllEvents(CampEvent.class);
     }
@@ -121,7 +121,7 @@ public class EventControler
 
     @PreAuthorize("hasRole('USER')")
     @GetMapping(value = "/tournament_events", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity getAllTournamentEvents() throws JsonProcessingException
+    public ResponseEntity getAllTournamentEvents()
     {
         return getAllEvents(TournamentEvent.class);
     }
@@ -177,14 +177,14 @@ public class EventControler
         return ResponseEntity.of( eventRepository.findById(id) );
     }
 
-    private ResponseEntity getAllEvents() throws JsonProcessingException
+    private ResponseEntity getAllEvents()
     {
         return Optional.ofNullable( eventRepository.findAllByOrderByDateCreatedDesc() )
             .map(listToResponseEntityWrapper::wrapListInResponseEntity)
             .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    private ResponseEntity getAllEvents(Class<? extends Event> eventType) throws JsonProcessingException
+    private ResponseEntity getAllEvents(Class<? extends Event> eventType)
     {
         if ( eventType.isAssignableFrom(ExamEvent.class) )
             return Optional.ofNullable( examEventRepository.findAllByOrderByDateCreatedDesc() )

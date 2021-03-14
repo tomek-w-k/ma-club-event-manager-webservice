@@ -64,7 +64,7 @@ public class CampRegistrationController
 
     @PreAuthorize("hasRole('USER')")
     @GetMapping(value = "/camp_events/{campEventId}/camp_registrations", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity getCampRegistrationsForCamp(@PathVariable Long campEventId) throws JsonProcessingException
+    public ResponseEntity getCampRegistrationsForCamp(@PathVariable Long campEventId)
     {
         return Optional.ofNullable(campRegistrationRepository.findByCampEventId(campEventId))
                 .map(listToResponseEntityWrapper::wrapListInResponseEntity)
@@ -73,7 +73,7 @@ public class CampRegistrationController
 
     @PreAuthorize("hasRole('USER')")
     @GetMapping(value = "/users/{userId}/camp_registrations", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity getCampRegistrationsForUser(@PathVariable Long userId) throws JsonProcessingException
+    public ResponseEntity getCampRegistrationsForUser(@PathVariable Long userId)
     {
         return Optional.ofNullable(campRegistrationRepository.findByUserId(userId))
                 .map(campRegistrations -> {
@@ -98,7 +98,7 @@ public class CampRegistrationController
 
     @PreAuthorize("hasRole('USER')")
     @GetMapping(value = "/camp_events/{campEventId}/clothing_sizes", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity getClothingSizesForCampEvent(@PathVariable Long campEventId) throws JsonProcessingException
+    public ResponseEntity getClothingSizesForCampEvent(@PathVariable Long campEventId)
     {
         return ResponseEntity.of( Optional.ofNullable(clothingSizeRepository.findByCampEventId(campEventId)) );
     }

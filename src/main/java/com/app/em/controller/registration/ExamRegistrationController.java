@@ -59,7 +59,7 @@ public class ExamRegistrationController
 
     @PreAuthorize("hasRole('USER')")
     @GetMapping(value = "/exam_events/{examEventId}/exam_registrations", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity getExamRegistrationsForExam(@PathVariable Long examEventId) throws JsonProcessingException
+    public ResponseEntity getExamRegistrationsForExam(@PathVariable Long examEventId)
     {
         return Optional.ofNullable(examRegistrationRepository.findByExamEventId(examEventId))
                 .map(listToResponseEntityWrapper::wrapListInResponseEntity)
@@ -68,7 +68,7 @@ public class ExamRegistrationController
 
     @PreAuthorize("hasRole('USER')")
     @GetMapping(value = "/users/{userId}/exam_registrations", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity getExamRegistrationsForUser(@PathVariable Long userId) throws JsonProcessingException
+    public ResponseEntity getExamRegistrationsForUser(@PathVariable Long userId)
     {
         return Optional.ofNullable(examRegistrationRepository.findByUserId(userId))
                 .map(examRegistrations -> {

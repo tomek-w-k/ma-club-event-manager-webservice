@@ -39,7 +39,7 @@ public class ClubDocumentController
 
     @PreAuthorize("hasRole('USER')")
     @GetMapping(value = "/club_documents", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity getAllClubDocuments() throws JsonProcessingException
+    public ResponseEntity getAllClubDocuments()
     {
         return Optional.ofNullable(clubDocumentRepository.findAll())
                 .map(listToResponseEntityWrapper::wrapListInResponseEntity)
@@ -51,7 +51,7 @@ public class ClubDocumentController
     public ResponseEntity updateClubDocument(@RequestBody ClubDocument clubDocument)
     {
         return clubDocumentRepository.findById(clubDocument.getId())
-                .map(clubDocumentToUpdate -> ResponseEntity.ok(clubDocumentRepository.save(clubDocument)))
+                .map(existingClubDocument -> ResponseEntity.ok(clubDocumentRepository.save(clubDocument)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 

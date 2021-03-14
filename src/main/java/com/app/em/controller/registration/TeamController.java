@@ -1,13 +1,10 @@
 package com.app.em.controller.registration;
 
-import com.app.em.persistence.entity.event.Event;
-import com.app.em.persistence.entity.event.TournamentEvent;
 import com.app.em.persistence.entity.team.Team;
-import com.app.em.persistence.entity.user.User;
-import com.app.em.persistence.repository.event.EventRepository;
 import com.app.em.persistence.repository.event.TournamentEventRepository;
 import com.app.em.persistence.repository.registration.TeamRepository;
 import com.app.em.security.payload.response.MessageResponse;
+import com.app.em.utils.ListToResponseEntityWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONArray;
@@ -17,10 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.web.firewall.RequestRejectedException;
 import org.springframework.web.bind.annotation.*;
-
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -39,118 +33,109 @@ public class TeamController
     @Autowired
     ObjectMapper objectMapper;
 
+    @Autowired
+    ListToResponseEntityWrapper listToResponseEntityWrapper;
+
 
     @PreAuthorize("hasRole('TRAINER')")
     @PostMapping(value = "/tournament_events/{tournamentEventId}/teams", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity addTeam(@RequestBody Team team, @PathVariable Long tournamentEventId)
     {
-        Optional<TournamentEvent> eventOptional = tournamentEventRepository.findById(tournamentEventId);
-        if ( eventOptional.isEmpty() )
-            return ResponseEntity.badRequest().body(new MessageResponse("Event specified for a given team doesn't exist."));
-
-        // Check if a given trainer already has a team for this tournament
-        final User trainer = team.getTrainer();
-        Boolean trainerAlreadyHasTeam = eventOptional.get().getTeams().stream().anyMatch(existingTeam -> {
-            return existingTeam.getTrainer().getId() == trainer.getId();
-        });
-
-        if ( trainerAlreadyHasTeam )
-            return ResponseEntity.badRequest().body(new MessageResponse("This trainer already has a team registered for this tournament."));
-
-        team.setTournamentEvent( eventOptional.get() );
-        Team savedTeam = teamRepository.save(team);
-
-        return ResponseEntity.ok(savedTeam);
+        return tournamentEventRepository.findById(tournamentEventId)
+                .map(tournamentEvent -> {
+                    return tournamentEvent.getTeams().stream()
+                            .filter(existingTeam -> existingTeam.getTrainer().getId() == team.getTrainer().getId())
+                            .findAny()
+                            .map(this::trainerAlreadyHasTeam)
+                            .orElseGet(() -> {
+                                team.setTournamentEvent(tournamentEvent);
+                                return ResponseEntity.ok(teamRepository.save(team));
+                            });
+                }).orElseGet(() -> ResponseEntity.badRequest().body(new MessageResponse("Event specified for a given team doesn't exist.")));
     }
 
     @PreAuthorize("hasRole('TRAINER')")
     @GetMapping(value = "/teams/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getTeam(@PathVariable Long id)
     {
-        Optional<Team> teamOptional = teamRepository.findById(id);
-        if ( teamOptional.isEmpty() )
-            return ResponseEntity.notFound().build();
+        return teamRepository.findById(id)
+                .map(team -> {
+                    JSONObject teamJson;
+                    try
+                    {
+                        teamJson = new JSONObject(objectMapper.writeValueAsString(team));
+                        teamJson.put("eventId", team.getTournamentEvent().getId());
+                        teamJson.put("eventName", team.getTournamentEvent().getEventName());
+                    }
+                    catch (JsonProcessingException e) { throw new RuntimeException(e); }
+                    catch (JSONException e) { throw new RuntimeException(e); }
 
-        Team team = teamOptional.get();
-        JSONObject teamJson;
-        try
-        {
-            teamJson = new JSONObject(objectMapper.writeValueAsString(team));
-            teamJson.put("eventId", team.getTournamentEvent().getId());
-            teamJson.put("eventName", team.getTournamentEvent().getEventName());
-        }
-        catch (JsonProcessingException e) { throw new RuntimeException(e); }
-        catch (JSONException e) { throw new RuntimeException(e); }
-
-        return ResponseEntity.ok( teamJson.toString() );
+                    return ResponseEntity.ok( teamJson.toString() );
+                }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PreAuthorize("hasRole('TRAINER')")
     @GetMapping(value = "/tournament_events/{tournamentEventId}/teams", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity getTeamsForEvent(@PathVariable Long tournamentEventId) throws JsonProcessingException
+    public ResponseEntity getTeamsForEvent(@PathVariable Long tournamentEventId)
     {
-        Optional<TournamentEvent> tournamentEventOptional = tournamentEventRepository.findById(tournamentEventId);
-        if ( tournamentEventOptional.isEmpty() )
-            return ResponseEntity.badRequest().body(new MessageResponse("Error - A given tournament doesn't exist."));
-
-        Optional<List<Team>> teamsOptional = Optional.ofNullable( teamRepository.findByTournamentEvent(tournamentEventOptional.get()) );
-        if ( teamsOptional.isEmpty() )
-            return ResponseEntity.notFound().build();
-
-        return ResponseEntity.ok( objectMapper.writeValueAsString(teamsOptional.get()) );
+        return tournamentEventRepository.findById(tournamentEventId)
+                .map(tournamentEvent -> {
+                    return Optional.ofNullable(teamRepository.findByTournamentEvent(tournamentEvent))
+                            .map(listToResponseEntityWrapper::wrapListInResponseEntity)
+                            .orElseGet(() -> ResponseEntity.notFound().build());
+                })
+                .orElseGet(() -> ResponseEntity.badRequest().body(new MessageResponse("Error - A given tournament doesn't exist.")));
     }
 
     @PreAuthorize("hasRole('TRAINER')")
     @GetMapping(value = "/user/{userId}/teams", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity getAllTeamsForUser(@PathVariable Long userId) throws JsonProcessingException
+    public ResponseEntity getAllTeamsForUser(@PathVariable Long userId)
     {
-        Optional<List<Team>> teamsOptional = Optional.ofNullable( teamRepository.findByTrainerId(userId) );
-        if ( teamsOptional.isEmpty() )
-            return ResponseEntity.notFound().build();
+        return Optional.ofNullable(teamRepository.findByTrainerId(userId))
+                .map(teams -> {
+                    List<JSONObject> jsonObjects = teams.stream()
+                        .map(team -> {
+                            JSONObject teamJson;
+                            try
+                            {
+                                teamJson = new JSONObject(objectMapper.writeValueAsString(team));
+                                teamJson.put("eventId", team.getTournamentEvent().getId());
+                                teamJson.put("eventName", team.getTournamentEvent().getEventName());
+                            }
+                            catch (JsonProcessingException e) { throw new RuntimeException(e); }
+                            catch (JSONException e) { throw new RuntimeException(e); }
 
-        List<JSONObject> jsonObjects = teamsOptional.get().stream().map(team -> {
-            JSONObject teamJson;
-            try
-            {
-                teamJson = new JSONObject(objectMapper.writeValueAsString(team));
-                teamJson.put("eventId", team.getTournamentEvent().getId());
-                teamJson.put("eventName", team.getTournamentEvent().getEventName());
-            }
-            catch (JsonProcessingException e) { throw new RuntimeException(e); }
-            catch (JSONException e) { throw new RuntimeException(e); }
+                            return teamJson;
+                        }).collect(Collectors.toList());
 
-            return teamJson;
-        })
-        .collect(Collectors.toList());
-
-        String teamsString =  new JSONArray(jsonObjects).toString();
-
-        return ResponseEntity.ok( teamsString );
+                    return ResponseEntity.ok( new JSONArray(jsonObjects).toString() );
+                }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PreAuthorize("hasRole('TRAINER')")
     @PutMapping(value = "/tournament_events/{tournamentEventId}/teams", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity updateTeam(@RequestBody Team team)
     {
-        Optional<Team> teamOptional = teamRepository.findById(team.getId());
-        if ( teamOptional.isEmpty() )
-            return ResponseEntity.notFound().build();
-
-        Team updatedTeam = teamRepository.save(team);
-
-        return ResponseEntity.ok(updatedTeam);
+        return teamRepository.findById(team.getId())
+                .map(existingTeam -> ResponseEntity.ok(teamRepository.save(team)))
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PreAuthorize("hasRole('TRAINER')")
     @DeleteMapping("/user/{userId}/teams/{id}")
     public ResponseEntity deleteTeam(@PathVariable Long id)
     {
-        Optional<Team> teamOptional = teamRepository.findById(id);
-        if ( teamOptional.isEmpty() )
-            return ResponseEntity.notFound().build();
+        return teamRepository.findById(id)
+                .map(team -> {
+                    teamRepository.delete(team);
+                    return ResponseEntity.ok().build();
+                }).orElseGet(() -> ResponseEntity.notFound().build());
+    }
 
-        teamRepository.deleteById(id);
+    // - - - - PRIVATE METHODS - - - -
 
-        return ResponseEntity.ok().build();
+    private ResponseEntity trainerAlreadyHasTeam(Team team)
+    {
+        return ResponseEntity.badRequest().body(new MessageResponse("This trainer already has a team registered for this tournament."));
     }
 }
