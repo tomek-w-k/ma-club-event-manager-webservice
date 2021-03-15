@@ -8,8 +8,6 @@ import com.app.em.security.payload.request.SignUpRequest;
 import com.app.em.security.payload.response.JwtResponse;
 import com.app.em.security.payload.response.MessageResponse;
 import com.app.em.security.service.UserDetailsImpl;
-import com.app.em.security.service.UserDetailsServiceImpl;
-import org.hibernate.id.UUIDGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,9 +15,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.web.bind.annotation.*;
-
 import javax.validation.Valid;
 import java.util.HashSet;
 import java.util.List;
@@ -46,16 +42,10 @@ public class AuthController
     ClubRepository clubRepository;
 
     @Autowired
-    RankRepository rankRepository;
-
-    @Autowired
     BranchChiefRepository branchChiefRepository;
 
     @Autowired
     PasswordEncoder passwordEncoder;
-
-    @Autowired
-    UserDetailsServiceImpl userDetailsService;
 
     @Autowired
     JwtUtils jwtUtils;
@@ -104,8 +94,8 @@ public class AuthController
         user.setRank(signUpRequest.getRank());
 
         if ( signUpRequest.getBranchChief() != null )
-        user.setBranchChief( branchChiefRepository.findById(signUpRequest.getBranchChief().getId()).orElseGet(() ->
-                branchChiefRepository.save(signUpRequest.getBranchChief())) );
+        user.setBranchChief( branchChiefRepository.findById(signUpRequest.getBranchChief().getId())
+                .orElseGet(() -> branchChiefRepository.save(signUpRequest.getBranchChief())) );
 
         Set<Role> rolesForUser = new HashSet<>();
         Role roleUser = roleRepository.findByRoleName(RoleEnum.ROLE_USER).orElseGet(() -> new Role(RoleEnum.ROLE_USER));
