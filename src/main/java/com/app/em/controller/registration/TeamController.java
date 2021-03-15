@@ -46,7 +46,7 @@ public class TeamController
                     return tournamentEvent.getTeams().stream()
                             .filter(existingTeam -> existingTeam.getTrainer().getId() == team.getTrainer().getId())
                             .findAny()
-                            .map(this::trainerAlreadyHasTeam)
+                            .map(this::trainerAlreadyHasTeamResponse)
                             .orElseGet(() -> {
                                 team.setTournamentEvent(tournamentEvent);
                                 return ResponseEntity.ok(teamRepository.save(team));
@@ -134,7 +134,7 @@ public class TeamController
 
     // - - - - PRIVATE METHODS - - - -
 
-    private ResponseEntity trainerAlreadyHasTeam(Team team)
+    private ResponseEntity trainerAlreadyHasTeamResponse(Team team)
     {
         return ResponseEntity.badRequest().body(new MessageResponse("This trainer already has a team registered for this tournament."));
     }
