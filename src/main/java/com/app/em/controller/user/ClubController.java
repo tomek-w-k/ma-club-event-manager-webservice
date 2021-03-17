@@ -29,7 +29,8 @@ public class ClubController
     @Autowired
     ListToResponseEntityWrapper listToResponseEntityWrapper;
 
-
+    
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/clubs", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity addClub(@RequestBody Club club)
     {
