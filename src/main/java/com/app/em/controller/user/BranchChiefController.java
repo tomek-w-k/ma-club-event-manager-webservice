@@ -39,7 +39,7 @@ public class BranchChiefController
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping(value = "/branch_chiefs", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/branch_chiefs/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getBranchChief(@PathVariable Integer id)
     {
         return ResponseEntity.of( branchChiefRepository.findById(id) );
