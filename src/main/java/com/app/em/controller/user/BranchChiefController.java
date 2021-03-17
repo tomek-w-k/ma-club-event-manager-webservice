@@ -30,6 +30,7 @@ public class BranchChiefController
     ListToResponseEntityWrapper listToResponseEntityWrapper;
 
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/branch_chiefs", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity addBranchChief(@RequestBody BranchChief branchChief)
     {
