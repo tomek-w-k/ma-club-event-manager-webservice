@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
@@ -29,6 +30,7 @@ public class RankController
     ListToResponseEntityWrapper listToResponseEntityWrapper;
 
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/ranks", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity addRank(@RequestBody Rank rank)
     {
@@ -37,6 +39,7 @@ public class RankController
                 .orElseGet(() -> ResponseEntity.ok(rankRepository.save(rank)));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/ranks/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getRank(@PathVariable Integer id)
     {
@@ -51,6 +54,7 @@ public class RankController
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(value = "/ranks", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity updateRank(@RequestBody Rank rank)
     {
@@ -59,6 +63,7 @@ public class RankController
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(value = "/ranks/{id}")
     public ResponseEntity deleteRank(@PathVariable Integer id)
     {
