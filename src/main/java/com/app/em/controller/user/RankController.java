@@ -69,7 +69,9 @@ public class RankController
     {
         return rankRepository.findById(id)
                 .map(rank -> {
-                    return Optional.ofNullable(userRepository.findByRank(rank))
+                    return userRepository.findByRank(rank)
+                            .stream()
+                            .findAny()
                             .map(this::rankHasUsersAssigned)
                             .orElseGet(() -> {
                                 rankRepository.delete(rank);
@@ -86,11 +88,10 @@ public class RankController
                 .body(new MessageResponse("A rank " + rank.getRankName() + " already exists."));
     }
 
-    private ResponseEntity rankHasUsersAssigned(List<User> users)
+    private ResponseEntity rankHasUsersAssigned(User user)
     {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new MessageResponse("A rank " +
-                        users.stream().findAny().map(user -> user.getRank().getRankName()) +
-                        " cannot be removed because it has one or more people assigned. Change their rank and try again."));
+                .body(new MessageResponse("A rank " + user.getRank().getRankName() +
+                    " cannot be removed because it has one or more people assigned. Change their rank and try again."));
     }
 }

@@ -29,7 +29,7 @@ public class ClubController
     @Autowired
     ListToResponseEntityWrapper listToResponseEntityWrapper;
 
-    
+
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/clubs", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity addClub(@RequestBody Club club)
@@ -69,7 +69,9 @@ public class ClubController
     {
         return clubRepository.findById(id)
                 .map(club -> {
-                    return Optional.ofNullable(userRepository.findByClub(club))
+                    return userRepository.findByClub(club)
+                            .stream()
+                            .findAny()
                             .map(this::clubHasUsersAssigned)
                             .orElseGet(() -> {
                                 clubRepository.delete(club);
@@ -86,11 +88,10 @@ public class ClubController
                 .body(new MessageResponse("A club " + club.getClubName() + " already exists."));
     }
 
-    private ResponseEntity clubHasUsersAssigned(List<User> users)
+    private ResponseEntity clubHasUsersAssigned(User user)
     {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new MessageResponse("A club " +
-                    users.stream().findAny().map(user -> user.getClub().getClubName()) +
+                .body(new MessageResponse("A club " + user.getClub().getClubName() +
                     " cannot be removed because it has one or more people assigned. Change their club and try again."));
     }
 }

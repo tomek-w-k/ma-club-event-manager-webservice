@@ -69,7 +69,9 @@ public class BranchChiefController
     {
         return branchChiefRepository.findById(id)
                 .map(branchChief -> {
-                    return Optional.ofNullable(userRepository.findByBranchChief(branchChief))
+                    return userRepository.findByBranchChief(branchChief)
+                            .stream()
+                            .findAny()
                             .map(this::branchChiefHasUsersAssigned)
                             .orElseGet(() -> {
                                 branchChiefRepository.delete(branchChief);
@@ -86,11 +88,10 @@ public class BranchChiefController
                 .body(new MessageResponse("A branch chief " + branchChief.getBranchChiefName() + " already exists."));
     }
 
-    private ResponseEntity branchChiefHasUsersAssigned(List<User> users)
+    private ResponseEntity branchChiefHasUsersAssigned(User user)
     {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new MessageResponse("A branch chief " +
-                    users.stream().findAny().map(user -> user.getBranchChief().getBranchChiefName()) +
+                .body(new MessageResponse("A branch chief " + user.getBranchChief().getBranchChiefName() +
                     " cannot be removed because it has one or more people assigned. Change their branch chief and try again."));
     }
 }
