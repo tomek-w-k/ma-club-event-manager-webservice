@@ -13,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
-import java.util.Optional;
 
 
 @RestController
@@ -34,9 +33,7 @@ public class RankController
     @PostMapping(value = "/ranks", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity addRank(@RequestBody Rank rank)
     {
-        return rankRepository.findByRankName(rank.getRankName())
-                .map(this::rankAlreadyExists)
-                .orElseGet(() -> ResponseEntity.ok(rankRepository.save(rank)));
+        return saveIfNotExist(rank);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -60,9 +57,7 @@ public class RankController
     @PutMapping(value = "/ranks", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity updateRank(@RequestBody Rank rank)
     {
-        return rankRepository.findById(rank.getId())
-                .map(rankToUpdate -> ResponseEntity.ok(rankRepository.save(rank)))
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        return saveIfNotExist(rank);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -83,6 +78,13 @@ public class RankController
     }
 
     // - - - PRIVATE METHODS - - -
+
+    private ResponseEntity saveIfNotExist(Rank rank)
+    {
+        return rankRepository.findByRankName(rank.getRankName())
+                .map(this::rankAlreadyExists)
+                .orElseGet(() -> ResponseEntity.ok(rankRepository.save(rank)));
+    }
 
     private ResponseEntity rankAlreadyExists(Rank rank)
     {

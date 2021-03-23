@@ -13,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
-import java.util.Optional;
 
 
 @RestController
@@ -34,9 +33,7 @@ public class ClubController
     @PostMapping(value = "/clubs", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity addClub(@RequestBody Club club)
     {
-        return clubRepository.findByClubName(club.getClubName())
-                .map(this::clubAlreadyExists)
-                .orElseGet(() -> ResponseEntity.ok(clubRepository.save(club)));
+        return saveIfNotExist(club);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -60,9 +57,7 @@ public class ClubController
     @PutMapping(value = "/clubs", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity updateClub(@RequestBody Club club)
     {
-        return clubRepository.findById(club.getId())
-                .map(existingClub -> ResponseEntity.ok(clubRepository.save(club)))
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        return saveIfNotExist(club);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -83,6 +78,13 @@ public class ClubController
     }
 
     // - - - PRIVATE METHODS - - -
+
+    private ResponseEntity saveIfNotExist(Club club)
+    {
+        return clubRepository.findByClubName(club.getClubName())
+                .map(this::clubAlreadyExists)
+                .orElseGet(() -> ResponseEntity.ok(clubRepository.save(club)));
+    }
 
     private ResponseEntity clubAlreadyExists(Club club)
     {

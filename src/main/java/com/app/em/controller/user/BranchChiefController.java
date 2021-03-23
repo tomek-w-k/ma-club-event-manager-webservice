@@ -12,11 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 
 @RestController
@@ -37,9 +33,7 @@ public class BranchChiefController
     @PostMapping(value = "/branch_chiefs", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity addBranchChief(@RequestBody BranchChief branchChief)
     {
-        return branchChiefRepository.findByBranchChiefName(branchChief.getBranchChiefName())
-                .map(this::branchChiefAlreadyExists)
-                .orElseGet(() -> ResponseEntity.ok(branchChiefRepository.save(branchChief)));
+        return saveIfNotExist(branchChief);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -63,9 +57,7 @@ public class BranchChiefController
     @PutMapping(value = "/branch_chiefs", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity updateBranchChief(@RequestBody BranchChief branchChief)
     {
-        return branchChiefRepository.findById(branchChief.getId())
-                .map(existingBranchChief -> ResponseEntity.ok(branchChiefRepository.save(branchChief)))
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        return saveIfNotExist(branchChief);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -86,6 +78,13 @@ public class BranchChiefController
     }
 
     // - - - PRIVATE METHODS - - -
+
+    private ResponseEntity saveIfNotExist(BranchChief branchChief)
+    {
+        return branchChiefRepository.findByBranchChiefName(branchChief.getBranchChiefName())
+                .map(this::branchChiefAlreadyExists)
+                .orElseGet(() -> ResponseEntity.ok(branchChiefRepository.save(branchChief)));
+    }
 
     private ResponseEntity branchChiefAlreadyExists(BranchChief branchChief)
     {
