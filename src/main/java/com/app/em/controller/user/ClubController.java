@@ -49,9 +49,11 @@ public class ClubController
     @GetMapping(value = "/clubs", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getAllClubs()
     {
-        return Optional.ofNullable(clubRepository.findAll())
-                .map(listToResponseEntityWrapper::wrapListInResponseEntity)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        List<Club> clubs = clubRepository.findAll();
+
+        if ( clubs.isEmpty() )
+            return ResponseEntity.notFound().build();
+        else return listToResponseEntityWrapper.wrapListInResponseEntity(clubs);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

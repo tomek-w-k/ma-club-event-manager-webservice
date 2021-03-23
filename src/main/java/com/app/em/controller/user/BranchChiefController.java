@@ -12,8 +12,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -49,9 +52,11 @@ public class BranchChiefController
     @GetMapping(value = "/branch_chiefs", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getAllBranchChiefs()
     {
-        return Optional.ofNullable(branchChiefRepository.findAll())
-                .map(listToResponseEntityWrapper::wrapListInResponseEntity)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        List<BranchChief> branchChiefs = branchChiefRepository.findAll();
+
+        if ( branchChiefs.isEmpty() )
+            return ResponseEntity.notFound().build();
+        else return listToResponseEntityWrapper.wrapListInResponseEntity(branchChiefs);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
