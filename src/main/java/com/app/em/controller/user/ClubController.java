@@ -89,13 +89,13 @@ public class ClubController
     private ResponseEntity clubAlreadyExists(Club club)
     {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new MessageResponse("A club " + club.getClubName() + " already exists."));
+                .body(new MessageResponse("club " + club.getClubName() + " already_exists"));
     }
 
     private ResponseEntity clubHasUsersAssigned(User user)
     {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new MessageResponse("A club " + user.getClub().getClubName() +
-                    " cannot be removed because it has one or more people assigned. Change their club and try again."));
+                .body(new MessageResponse("club " + user.getClub().getClubName() +
+                    " club_cannot_be_removed_because"));
     }
 }

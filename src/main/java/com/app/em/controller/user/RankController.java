@@ -89,13 +89,13 @@ public class RankController
     private ResponseEntity rankAlreadyExists(Rank rank)
     {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new MessageResponse("A rank " + rank.getRankName() + " already exists."));
+                .body(new MessageResponse("rank " + rank.getRankName() + " already_exists"));
     }
 
     private ResponseEntity rankHasUsersAssigned(User user)
     {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new MessageResponse("A rank " + user.getRank().getRankName() +
-                    " cannot be removed because it has one or more people assigned. Change their rank and try again."));
+                .body(new MessageResponse("rank " + user.getRank().getRankName() +
+                    " rank_cannot_be_removed_because"));
     }
 }

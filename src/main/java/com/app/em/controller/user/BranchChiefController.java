@@ -89,13 +89,13 @@ public class BranchChiefController
     private ResponseEntity branchChiefAlreadyExists(BranchChief branchChief)
     {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new MessageResponse("A branch chief " + branchChief.getBranchChiefName() + " already exists."));
+                .body(new MessageResponse("branch_chief " + branchChief.getBranchChiefName() + " already_exists"));
     }
 
     private ResponseEntity branchChiefHasUsersAssigned(User user)
     {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new MessageResponse("A branch chief " + user.getBranchChief().getBranchChiefName() +
-                    " cannot be removed because it has one or more people assigned. Change their branch chief and try again."));
+                .body(new MessageResponse("branch_chief " + user.getBranchChief().getBranchChiefName() +
+                    " branch_chief_cannot_be_removed_because"));
     }
 }
