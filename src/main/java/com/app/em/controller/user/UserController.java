@@ -1,35 +1,22 @@
 package com.app.em.controller.user;
 
-import com.app.em.persistence.entity.event.TournamentEvent;
-import com.app.em.persistence.entity.team.Team;
 import com.app.em.persistence.entity.user.*;
-import com.app.em.persistence.repository.event.TournamentEventRepository;
-import com.app.em.persistence.repository.registration.CampRegistrationRepository;
-import com.app.em.persistence.repository.registration.ExamRegistrationRepository;
-import com.app.em.persistence.repository.registration.TeamRepository;
 import com.app.em.persistence.repository.user.*;
 import com.app.em.security.payload.response.MessageResponse;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.coyote.Response;
+import com.app.em.utils.ListToResponseEntityWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class UserController
 {
-    private static final String SIMPLE_ENDPOINT_MODE = "simple";
-    private static final String COMPLEMENT_ENDPOINT_MODE = "complement";
-
     @Autowired
     UserRepository userRepository;
 
@@ -46,210 +33,105 @@ public class UserController
     BranchChiefRepository branchChiefRepository;
 
     @Autowired
-    ExamRegistrationRepository examRegistrationRepository;
-
-    @Autowired
-    CampRegistrationRepository campRegistrationRepository;
-
-    @Autowired
-    TournamentEventRepository tournamentEventRepository;
-
-    @Autowired
-    TeamRepository teamRepository;
-
-    @Autowired
-    ObjectMapper objectMapper;
+    ListToResponseEntityWrapper listToResponseEntityWrapper;
 
 
     @PreAuthorize("hasRole('TRAINER')")
     @PostMapping("/users")
-    public ResponseEntity addUser(@RequestBody User user) throws JsonProcessingException
+    public ResponseEntity addUser(@RequestBody User user)
     {
-        Optional<User> userEmailOptional = userRepository.findByEmail(user.getEmail());
-        if ( userEmailOptional.isPresent() )
-            return userAlreadyExists(user.getEmail());
-
-        Boolean containsAdmin = false;
-        if ( user.getRoles() != null )
-            containsAdmin = user.getRoles().stream().anyMatch(role -> role.getRoleName().toString().equals("ROLE_ADMIN"));
-
-        // If the user contains admin in its array, then return
-        if ( containsAdmin )
-            return ResponseEntity.badRequest().body(new MessageResponse("Remove ROLE_ADMIN from json."));
-
-        if ( user.getRank() != null )
-            user.setRank( rankRepository.findById(user.getRank().getId()).orElseGet(() -> rankRepository.save(user.getRank())) );
-
-        if ( user.getClub() != null )
-            user.setClub( clubRepository.findById(user.getClub().getId()).orElseGet(() -> clubRepository.save(user.getClub())) );
-
-        if ( user.getBranchChief() != null )
-            user.setBranchChief( branchChiefRepository.findById(user.getBranchChief().getId()).orElseGet(() ->
-                    branchChiefRepository.save(user.getBranchChief())) );
-
-        User savedUser = userRepository.save(user);
-
-        return ResponseEntity.ok(savedUser);
+        return userRepository.findByEmail(user.getEmail())
+                .map(this::emailAlreadyTaken)
+                .orElseGet(() -> {
+                    return user.getRoles()
+                            .stream()
+                            .filter(role -> role.getRoleName().toString().equals("ROLE_ADMIN"))
+                            .findAny()
+                            .map(this::removeRole)
+                            .orElseGet(() -> setUserSelectableOptionsAndSaveUser(user));
+                });
     }
 
     @PreAuthorize("hasRole('USER')")
     @GetMapping("/users/{id}")
     public ResponseEntity<User> getUser(@PathVariable Long id)
     {
-        Optional<User> userOptional = userRepository.findById(id);
-        if ( userOptional.isEmpty() )
-            return ResponseEntity.notFound().build();
-
-        return ResponseEntity.ok( userOptional.get() );
+        return ResponseEntity.of( userRepository.findById(id) );
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity getAllUsers() throws JsonProcessingException
+    public ResponseEntity getAllUsers()
     {
-        Optional<List<User>> usersOptional = Optional.ofNullable( userRepository.findAll() );
-        if ( usersOptional.isEmpty() )
-            return ResponseEntity.notFound().build();
-
-        return ResponseEntity.ok( objectMapper.writeValueAsString(usersOptional.get()) );
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping(value = "/tournament_events/{tournamentEventId}/users/{mode}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity getUsersForTournament(@PathVariable Long tournamentEventId, @PathVariable String mode) throws JsonProcessingException
-    {
-        Optional<TournamentEvent> tournamentEventOptional = tournamentEventRepository.findById(tournamentEventId);
-        if ( tournamentEventOptional.isEmpty() )
-            return ResponseEntity.badRequest().body(new MessageResponse("A given tournament doesn't exist."));
-
-        Optional<List<Team>> teamsOptional = Optional.ofNullable( teamRepository.findByTournamentEvent(tournamentEventOptional.get()) );
-        if ( teamsOptional.isEmpty() )
-        {
-            switch (mode)
-            {
-                case SIMPLE_ENDPOINT_MODE: return ResponseEntity.notFound().build();
-                case COMPLEMENT_ENDPOINT_MODE: return this.getAllUsers();
-                default: return ResponseEntity.badRequest().body(new MessageResponse("Error - Wrong endpoint mode (simple | complement)"));
-            }
-        }
-
-        List<User> usersInTournament = teamsOptional
-                .get().stream().map(team -> team.getTournamentRegistrations())
-                                .flatMap(regList -> regList.stream())
-                                .map(registration -> registration.getUser())
-                                .collect(Collectors.toList());
-
-        switch (mode)
-        {
-            case SIMPLE_ENDPOINT_MODE:  return ResponseEntity.ok( objectMapper.writeValueAsString(usersInTournament) );
-            case COMPLEMENT_ENDPOINT_MODE: {
-                Optional<List<User>> usersOptional = Optional.ofNullable( userRepository.findAll() );
-                if ( usersOptional.isEmpty() )
-                    return ResponseEntity.notFound().build();
-
-                List<User> users = usersOptional.get();
-                users.removeAll(usersInTournament);
-                return ResponseEntity.ok( objectMapper.writeValueAsString( users ) );
-            }
-            default: return ResponseEntity.badRequest().body(new MessageResponse("Error - Wrong endpoint mode (simple | complement)"));
-        }
+         return listToResponseEntityWrapper.wrapListInResponseEntity(userRepository.findAll());
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "roles/{roleName}/users", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity getUsersForRole(@PathVariable String roleName) throws JsonProcessingException
+    public ResponseEntity getUsersForRole(@PathVariable String roleName)
     {
-        RoleEnum roleEnum;
-        switch(roleName)
-        {
-            case "ROLE_USER": roleEnum = RoleEnum.ROLE_USER; break;
-            case "ROLE_ADMIN": roleEnum = RoleEnum.ROLE_ADMIN; break;
-            case "ROLE_TRAINER": roleEnum = RoleEnum.ROLE_TRAINER; break;
-            default : roleEnum = RoleEnum.ROLE;
-        }
-
-        Optional<Role> roleOptional = roleRepository.findByRoleName(roleEnum);
-        if ( roleOptional.isEmpty() )
-            return ResponseEntity.notFound().build();
-
-        Optional<List<User>> usersOptional = Optional.ofNullable( userRepository.findByRoles(roleOptional.get()) );
-        if ( usersOptional.isEmpty() )
-            return ResponseEntity.notFound().build();
-
-        return ResponseEntity.ok( objectMapper.writeValueAsString(usersOptional.get()) );
+        return roleRepository.findByRoleName(RoleEnum.valueOf(roleName))
+                .map(role -> listToResponseEntityWrapper.wrapListInResponseEntity( userRepository.findByRoles(role)) )
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PreAuthorize("hasRole('USER')")
     @PutMapping("/users")
     public ResponseEntity updateUser(@RequestBody User user)
     {
-        Optional<User> userByIdOptional = userRepository.findById(user.getId());
-        if ( userByIdOptional.isEmpty() )
-            return ResponseEntity.notFound().build();
+        return userRepository.findById(user.getId())
+                .map(existingUser -> {
+                    if (user.getEmail() == null)
+                        return ResponseEntity.ok(userRepository.save(user));
 
-        // - - - soft deletion - - -
-        if (user.getEmail() == null)
-            return ResponseEntity.ok(userRepository.save(user));
-
-        // - - - update - - -
-        Optional<User> userByEmailOptional = userRepository.findByEmail(user.getEmail());
-        // if such an email exists and if it's not the user's own email then return
-        if ( userByEmailOptional.isPresent() && (!user.getEmail().equals(userByIdOptional.get().getEmail()) ) )
-            return ResponseEntity.badRequest().body(new MessageResponse("email_already_taken"));
-
-        // Checks if the user specified by email already has admin privileges
-        Boolean isAdmin = userByEmailOptional.get().getRoles().stream().anyMatch(role -> role.getRoleName().toString().equals("ROLE_ADMIN"));
-
-        // Checks if incoming user has inserted an admin role in its roles array
-        Boolean containsAdmin = false;
-        if ( user.getRoles() != null )
-            containsAdmin = user.getRoles().stream().anyMatch(role -> role.getRoleName().toString().equals("ROLE_ADMIN"));
-
-        // If the user is not originally an admin and contains admin in its array, then return
-        if (!isAdmin && containsAdmin )
-            return ResponseEntity.badRequest().body(new MessageResponse("Remove ROLE_ADMIN from json."));
-
-        if ( user.getRank() != null )
-            user.setRank( rankRepository.findById(user.getRank().getId()).orElseGet(() -> rankRepository.save(user.getRank())) );
-
-        if ( user.getClub() != null )
-            user.setClub( clubRepository.findById(user.getClub().getId()).orElseGet(() -> clubRepository.save(user.getClub())) );
-
-        if ( user.getBranchChief() != null )
-            user.setBranchChief( branchChiefRepository.findById(user.getBranchChief().getId()).orElseGet(() ->
-                    branchChiefRepository.save(user.getBranchChief())) );
-
-        User updatedUser = userRepository.save( user );
-
-        return ResponseEntity.ok( updatedUser );
+                    return userRepository.findByEmail(user.getEmail())
+                            .filter(foundUser -> foundUser.getId() != user.getId())
+                            .map(this::emailAlreadyTaken)
+                            .orElseGet(() ->{
+                                return userRepository.findByEmail(user.getEmail())
+                                        .filter(foundUser -> !foundUser.getRoles().stream().anyMatch(role -> role.getRoleName().toString().equals(RoleEnum.ROLE_ADMIN.toString())) &&
+                                                            Optional.ofNullable(user.getRoles()).map(roles -> roles.stream()
+                                                                    .anyMatch(role -> role.getRoleName().toString().equals(RoleEnum.ROLE_ADMIN.toString()))).orElseGet(() -> false))
+                                        .map(foundUser -> ResponseEntity.badRequest().body(new MessageResponse("Remove ROLE_ADMIN from json")))
+                                        .orElseGet(() -> setUserSelectableOptionsAndSaveUser(user));
+                            });
+                })
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/users/{id}")
     public ResponseEntity deleteUser(@PathVariable Long id)
     {
-        Optional<User> userOptional = userRepository.findById(id);
-        if ( userOptional.isEmpty() )
-            return ResponseEntity.notFound().build();
-
-        userRepository.deleteById( id );
-
-        return ResponseEntity.ok().build();
+        return userRepository.findById(id)
+                .map(existingUser -> {
+                    userRepository.delete(existingUser);
+                    return ResponseEntity.ok().build();
+                }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping(value = "/roles", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity getRoles() throws JsonProcessingException
-    {
-        Optional<List<Role>> rolesOptional = Optional.ofNullable(roleRepository.findAll());
-        if ( rolesOptional.isEmpty() )
-            return ResponseEntity.notFound().build();
+    // - - - PRIVATE METHODS - - -
 
-        return ResponseEntity.ok( objectMapper.writeValueAsString(rolesOptional.get()) );
+    private ResponseEntity emailAlreadyTaken(User existingUser)
+    {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new MessageResponse("email_already_taken"));
     }
 
-    private ResponseEntity userAlreadyExists(String who)
+    private ResponseEntity removeRole(Role role)
     {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body("User " + who + " already exists");
+        return ResponseEntity.badRequest().body(new MessageResponse("Remove " + role.getRoleName() + " from json."));
+    }
+
+    private ResponseEntity setUserSelectableOptionsAndSaveUser(User user)
+    {
+        Optional.ofNullable(user.getRank())
+                .ifPresent(rank -> user.setRank( rankRepository.findById(rank.getId()).orElseGet(() -> rankRepository.save(rank))) );
+        Optional.ofNullable(user.getClub())
+                .ifPresent(club -> user.setClub( clubRepository.findById(club.getId()).orElseGet(() -> clubRepository.save(club))) );
+        Optional.ofNullable(user.getBranchChief())
+                .ifPresent(branchChief -> user.setBranchChief( branchChiefRepository.findById(branchChief.getId())
+                        .orElseGet(() -> branchChiefRepository.save(branchChief))) );
+
+        return ResponseEntity.ok( userRepository.save(user) );
     }
 }
