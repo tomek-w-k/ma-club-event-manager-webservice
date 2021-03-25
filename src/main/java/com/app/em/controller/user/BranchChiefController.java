@@ -46,11 +46,7 @@ public class BranchChiefController
     @GetMapping(value = "/branch_chiefs", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getAllBranchChiefs()
     {
-        List<BranchChief> branchChiefs = branchChiefRepository.findAll();
-
-        if ( branchChiefs.isEmpty() )
-            return ResponseEntity.notFound().build();
-        else return listToResponseEntityWrapper.wrapListInResponseEntity(branchChiefs);
+        return listToResponseEntityWrapper.wrapListInResponseEntity(branchChiefRepository.findAll());
     }
 
     @PreAuthorize("hasRole('ADMIN')")

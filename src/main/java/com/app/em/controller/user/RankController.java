@@ -46,11 +46,7 @@ public class RankController
     @GetMapping(value = "/ranks", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getAllRanks()
     {
-        List<Rank> ranks = rankRepository.findAll();
-
-        if ( ranks.isEmpty() )
-            return ResponseEntity.notFound().build();
-        else return listToResponseEntityWrapper.wrapListInResponseEntity(ranks);
+        return listToResponseEntityWrapper.wrapListInResponseEntity(rankRepository.findAll());
     }
 
     @PreAuthorize("hasRole('ADMIN')")
