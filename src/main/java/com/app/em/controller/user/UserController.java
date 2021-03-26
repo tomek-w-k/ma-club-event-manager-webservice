@@ -67,7 +67,7 @@ public class UserController
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping(value = "roles/{roleName}/users", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/roles/{roleName}/users", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getUsersForRole(@PathVariable String roleName)
     {
         return roleRepository.findByRoleName(RoleEnum.valueOf(roleName))
