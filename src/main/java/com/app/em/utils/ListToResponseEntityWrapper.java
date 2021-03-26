@@ -18,9 +18,7 @@ public class ListToResponseEntityWrapper
     public ResponseEntity wrapListInResponseEntity(List<?> items)
     {
         try {
-            if ( items.isEmpty() )
-                return ResponseEntity.notFound().build();
-            else return ResponseEntity.ok(objectMapper.writeValueAsString(items));
+            return ResponseEntity.ok(objectMapper.writeValueAsString(items));
         } catch (JsonProcessingException e) {
             return ResponseEntity.notFound().build();
         }
