@@ -4,6 +4,7 @@ import com.app.em.persistence.entity.registration.CampRegistration;
 import com.app.em.persistence.repository.clothing_size.ClothingSizeRepository;
 import com.app.em.persistence.repository.event.CampEventRepository;
 import com.app.em.persistence.repository.registration.CampRegistrationRepository;
+import com.app.em.persistence.repository.user.UserRepository;
 import com.app.em.security.payload.response.MessageResponse;
 import com.app.em.utils.ListToResponseEntityWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -37,6 +38,9 @@ public class CampRegistrationController
     ClothingSizeRepository clothingSizeRepository;
 
     @Autowired
+    UserRepository userRepository;
+
+    @Autowired
     ObjectMapper objectMapper;
 
     @Autowired
@@ -66,16 +70,15 @@ public class CampRegistrationController
     @GetMapping(value = "/camp_events/{campEventId}/camp_registrations", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getCampRegistrationsForCamp(@PathVariable Long campEventId)
     {
-        return Optional.ofNullable(campRegistrationRepository.findByCampEventId(campEventId))
-                .map(listToResponseEntityWrapper::wrapListInResponseEntity)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        return listToResponseEntityWrapper.wrapListInResponseEntity(campRegistrationRepository.findByCampEventId(campEventId));
     }
 
     @PreAuthorize("hasRole('USER')")
     @GetMapping(value = "/users/{userId}/camp_registrations", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getCampRegistrationsForUser(@PathVariable Long userId)
     {
-        return Optional.ofNullable(campRegistrationRepository.findByUserId(userId))
+        return userRepository.findById(userId)
+                .map(foundUser -> campRegistrationRepository.findByUserId(foundUser.getId()))
                 .map(campRegistrations -> {
                     List<JSONObject> jsonObjects = campRegistrations.stream()
                         .map(registration -> {
