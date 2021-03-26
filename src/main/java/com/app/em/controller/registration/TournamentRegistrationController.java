@@ -65,28 +65,28 @@ public class TournamentRegistrationController
         return teamRepository.findById(teamId)
                 .map(team -> {
                     tournamentRegistration.setTeam(team);
-                    return tournamentEventRepository.findTournamentEventByTeams(team)
-                            .map(tournamentEvent -> {
-                                return userRepository.findByEmail(tournamentRegistration.getUser().getEmail()) // Check if a user with the given email exists, if so - get it, if not - create and get it
-                                        .map(user -> {
-                                            return tournamentEvent.getTeams().stream() // If the user exists, check if it is already registered for this team's tournament event
-                                                .map(Team::getTournamentRegistrations)
-                                                .flatMap(Collection::stream)
-                                                .filter(existingTournamentRegistration -> existingTournamentRegistration.getUser().getEmail().equals(user.getEmail()))
-                                                .findAny()
-                                                .map(this::participantAlreadyRegisteredResponse)
-                                                .orElseGet(() -> {
-                                                    tournamentRegistration.setUser(user);
-                                                    return ResponseEntity.ok( tournamentRegistrationRepository.save(tournamentRegistration) );
-                                                });
-                                        })
-                                        .orElseGet(() -> {
-                                            tournamentRegistration.getUser().setPassword(UUID.randomUUID().toString());
-                                            tournamentRegistration.setUser( userRepository.save(tournamentRegistration.getUser()) );
-                                            return ResponseEntity.ok( tournamentRegistrationRepository.save(tournamentRegistration) );
-                                        });
-                            }).orElseGet(this::eventDoesNotExistResponse);
-                }).orElseGet(this::teamDoesNotExistResponse);
+                    return tournamentEventRepository.findTournamentEventByTeams(team).get();
+                })
+                .map(tournamentEvent -> {
+                    return userRepository.findByEmail(tournamentRegistration.getUser().getEmail()) // Check if a user with the given email exists, if so - get it, if not - create and get it
+                            .map(user -> {
+                                return tournamentEvent.getTeams().stream() // If the user exists, check if it is already registered for this team's tournament event
+                                    .map(Team::getTournamentRegistrations)
+                                    .flatMap(Collection::stream)
+                                    .filter(existingTournamentRegistration -> existingTournamentRegistration.getUser().getEmail().equals(user.getEmail()))
+                                    .findAny()
+                                    .map(this::participantAlreadyRegisteredResponse)
+                                    .orElseGet(() -> {
+                                        tournamentRegistration.setUser(user);
+                                        return ResponseEntity.ok( tournamentRegistrationRepository.save(tournamentRegistration) );
+                                    });
+                            })
+                            .orElseGet(() -> {
+                                tournamentRegistration.getUser().setPassword(UUID.randomUUID().toString());
+                                tournamentRegistration.setUser( userRepository.save(tournamentRegistration.getUser()) );
+                                return ResponseEntity.ok( tournamentRegistrationRepository.save(tournamentRegistration) );
+                            });
+                }).orElseGet(this::eventDoesNotExistResponse);
     }
 
     @PreAuthorize("hasRole('TRAINER')")
@@ -115,52 +115,25 @@ public class TournamentRegistrationController
     public ResponseEntity getTournamentRegistrationsForTournament(@PathVariable Long tournamentEventId)
     {
         return tournamentEventRepository.findById(tournamentEventId)
-                .map(tournamentEvent -> {
-                    return Optional.ofNullable(teamRepository.findByTournamentEvent(tournamentEvent))
-                            .map(teams -> {
-                                List<JSONObject> jsonObjects = teams.stream()
-                                    .map(team -> team.getTournamentRegistrations())
-                                    .flatMap(regList -> regList.stream())
-                                    .map(registration -> {
-                                        JSONObject registrationJson;
-                                        try
-                                        {
-                                            registrationJson = new JSONObject(objectMapper.writeValueAsString(registration));
-                                            registrationJson.put("teamId", registration.getTeam().getId());
-                                            registrationJson.put("trainerFullName",
-                                                    registration.getTeam().getTrainer() != null ?
-                                                            registration.getTeam().getTrainer().getFullName() : "none");
-                                            registrationJson.put("trainerClubName",
-                                                    registration.getTeam().getTrainer().getClub() != null ?
-                                                            registration.getTeam().getTrainer().getClub().getClubName() : "none");
-                                        }
-                                        catch (JsonProcessingException e) { throw new RuntimeException(e); }
-                                        catch (JSONException e) { throw new RuntimeException(e); }
-
-                                        return registrationJson;
-                                    }).collect(Collectors.toList());
-
-                                return ResponseEntity.ok( new JSONArray(jsonObjects).toString() );
-                            }).orElseGet(() -> ResponseEntity.notFound().build());
-                }).orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @PreAuthorize("hasRole('TRAINER')")
-    @GetMapping(value = "/users/{userId}/tournament_registrations", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity getTournamentRegistrationsForUser(@PathVariable Long userId)
-    {
-        return Optional.ofNullable(tournamentRegistrationRepository.findByUserId(userId))
-                .map(tournamentRegistrations -> {
-                    List<JSONObject> jsonObjects = tournamentRegistrations.stream()
+                .map(tournamentEvent -> teamRepository.findByTournamentEvent(tournamentEvent))
+                .map(teams -> {
+                    List<JSONObject> jsonObjects = teams.stream()
+                        .map(team -> team.getTournamentRegistrations())
+                        .flatMap(regList -> regList.stream())
                         .map(registration -> {
                             JSONObject registrationJson;
                             try
                             {
                                 registrationJson = new JSONObject(objectMapper.writeValueAsString(registration));
-                                registrationJson.put("eventId", registration.getTeam().getTournamentEvent().getId());
-                                registrationJson.put("eventName", registration.getTeam().getTournamentEvent().getEventName());
+                                registrationJson.put("teamId", registration.getTeam().getId());
+                                registrationJson.put("trainerFullName",
+                                        registration.getTeam().getTrainer() != null ?
+                                                registration.getTeam().getTrainer().getFullName() : "none");
+                                registrationJson.put("trainerClubName",
+                                        registration.getTeam().getTrainer().getClub() != null ?
+                                                registration.getTeam().getTrainer().getClub().getClubName() : "none");
                             }
-                            catch (JsonProcessingException e) { throw new RuntimeException((e)); }
+                            catch (JsonProcessingException e) { throw new RuntimeException(e); }
                             catch (JSONException e) { throw new RuntimeException(e); }
 
                             return registrationJson;
@@ -171,39 +144,57 @@ public class TournamentRegistrationController
     }
 
     @PreAuthorize("hasRole('TRAINER')")
+    @GetMapping(value = "/users/{userId}/tournament_registrations", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity getTournamentRegistrationsForUser(@PathVariable Long userId)
+    {
+        return userRepository.findById(userId)
+                .map(foundUser -> tournamentRegistrationRepository.findByUserId(foundUser.getId()))
+                .map(tournamentRegistrations -> {
+                    List<JSONObject> jsonObjects = tournamentRegistrations.stream()
+                            .map(registration -> {
+                                JSONObject registrationJson;
+                                try
+                                {
+                                    registrationJson = new JSONObject(objectMapper.writeValueAsString(registration));
+                                    registrationJson.put("eventId", registration.getTeam().getTournamentEvent().getId());
+                                    registrationJson.put("eventName", registration.getTeam().getTournamentEvent().getEventName());
+                                }
+                                catch (JsonProcessingException e) { throw new RuntimeException((e)); }
+                                catch (JSONException e) { throw new RuntimeException(e); }
+
+                                return registrationJson;
+                            }).collect(Collectors.toList());
+
+                    return ResponseEntity.ok( new JSONArray(jsonObjects).toString() );
+                }).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PreAuthorize("hasRole('TRAINER')")
     @GetMapping(value = "teams/{teamId}/tournament_registrations", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getTournamentRegistrationsForTeam(@PathVariable Long teamId)
     {
-        return Optional.ofNullable(tournamentRegistrationRepository.findByTeamId(teamId))
-                .map(listToResponseEntityWrapper::wrapListInResponseEntity)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        return listToResponseEntityWrapper.wrapListInResponseEntity(tournamentRegistrationRepository.findByTeamId(teamId));
     }
 
     @PreAuthorize("hasRole('TRAINER')")
     @GetMapping(value = "/tournament_events/{tournamentEventId}/room_types", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getRoomTypesForTournament(@PathVariable Long tournamentEventId)
     {
-        return Optional.ofNullable(roomTypeRepository.findByTournamentEventId(tournamentEventId))
-                .map(listToResponseEntityWrapper::wrapListInResponseEntity)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        return listToResponseEntityWrapper.wrapListInResponseEntity(roomTypeRepository.findByTournamentEventId(tournamentEventId));
     }
 
     @PreAuthorize("hasRole('TRAINER')")
     @GetMapping(value = "/tournament_events/{tournamentEventId}/stay_periods")
     public ResponseEntity getStayPeriodsForTournament(@PathVariable Long tournamentEventId)
     {
-        return Optional.ofNullable(stayPeriodRepository.findByTournamentEventId(tournamentEventId))
-                .map(listToResponseEntityWrapper::wrapListInResponseEntity)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        return listToResponseEntityWrapper.wrapListInResponseEntity(stayPeriodRepository.findByTournamentEventId(tournamentEventId));
     }
 
     @PreAuthorize("hasRole('TRAINER')")
     @GetMapping(value = "/tournament_events/{tournamentEventId}/weight_age_categories")
     public ResponseEntity getWeightAgeCategoriesForTournament(@PathVariable Long tournamentEventId)
     {
-        return Optional.ofNullable(weightAgeCategoryRepository.findByTournamentEventId(tournamentEventId))
-                .map(listToResponseEntityWrapper::wrapListInResponseEntity)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        return listToResponseEntityWrapper.wrapListInResponseEntity(weightAgeCategoryRepository.findByTournamentEventId(tournamentEventId));
     }
 
     @PreAuthorize("hasRole('TRAINER')")
