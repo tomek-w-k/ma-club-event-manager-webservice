@@ -18,7 +18,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import javax.validation.ConstraintViolationException;
 import java.sql.SQLIntegrityConstraintViolationException;
-import java.util.Optional;
 
 
 @RestController
@@ -179,27 +178,19 @@ public class EventControler
 
     private ResponseEntity getAllEvents()
     {
-        return Optional.ofNullable( eventRepository.findAllByOrderByDateCreatedDesc() )
-            .map(listToResponseEntityWrapper::wrapListInResponseEntity)
-            .orElseGet(() -> ResponseEntity.notFound().build());
+        return listToResponseEntityWrapper.wrapListInResponseEntity(eventRepository.findAllByOrderByDateCreatedDesc());
     }
 
     private ResponseEntity getAllEvents(Class<? extends Event> eventType)
     {
         if ( eventType.isAssignableFrom(ExamEvent.class) )
-            return Optional.ofNullable( examEventRepository.findAllByOrderByDateCreatedDesc() )
-                    .map(listToResponseEntityWrapper::wrapListInResponseEntity)
-                    .orElseGet(() -> ResponseEntity.notFound().build());
+            return listToResponseEntityWrapper.wrapListInResponseEntity(examEventRepository.findAllByOrderByDateCreatedDesc());
 
         if ( eventType.isAssignableFrom(CampEvent.class) )
-            return Optional.ofNullable( campEventRepository.findAllByOrderByDateCreatedDesc() )
-                    .map(listToResponseEntityWrapper::wrapListInResponseEntity)
-                    .orElseGet(() -> ResponseEntity.notFound().build());
+            return listToResponseEntityWrapper.wrapListInResponseEntity(campEventRepository.findAllByOrderByDateCreatedDesc());
 
         if ( eventType.isAssignableFrom(TournamentEvent.class) )
-            return Optional.ofNullable( tournamentEventRepository.findAllByOrderByDateCreatedDesc() )
-                    .map(listToResponseEntityWrapper::wrapListInResponseEntity)
-                    .orElseGet(() -> ResponseEntity.notFound().build());
+            return listToResponseEntityWrapper.wrapListInResponseEntity(tournamentEventRepository.findAllByOrderByDateCreatedDesc());
 
         return ResponseEntity.notFound().build();
     }
