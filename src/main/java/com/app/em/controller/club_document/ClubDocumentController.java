@@ -3,13 +3,11 @@ package com.app.em.controller.club_document;
 import com.app.em.persistence.entity.club_document.ClubDocument;
 import com.app.em.persistence.repository.club_document.ClubDocumentRepository;
 import com.app.em.utils.ListToResponseEntityWrapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import java.util.Optional;
 
 
 @RestController
@@ -41,9 +39,7 @@ public class ClubDocumentController
     @GetMapping(value = "/club_documents", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getAllClubDocuments()
     {
-        return Optional.ofNullable(clubDocumentRepository.findAll())
-                .map(listToResponseEntityWrapper::wrapListInResponseEntity)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        return listToResponseEntityWrapper.wrapListInResponseEntity(clubDocumentRepository.findAll());
     }
 
     @PreAuthorize("hasRole('ADMIN')")
