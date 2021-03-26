@@ -3,6 +3,7 @@ package com.app.em.controller.registration;
 import com.app.em.persistence.entity.registration.ExamRegistration;
 import com.app.em.persistence.repository.event.ExamEventRepository;
 import com.app.em.persistence.repository.registration.ExamRegistrationRepository;
+import com.app.em.persistence.repository.user.UserRepository;
 import com.app.em.security.payload.response.MessageResponse;
 import com.app.em.utils.ListToResponseEntityWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -17,7 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -30,6 +30,9 @@ public class ExamRegistrationController
 
     @Autowired
     ExamEventRepository examEventRepository;
+
+    @Autowired
+    UserRepository userRepository;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -61,31 +64,30 @@ public class ExamRegistrationController
     @GetMapping(value = "/exam_events/{examEventId}/exam_registrations", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getExamRegistrationsForExam(@PathVariable Long examEventId)
     {
-        return Optional.ofNullable(examRegistrationRepository.findByExamEventId(examEventId))
-                .map(listToResponseEntityWrapper::wrapListInResponseEntity)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        return listToResponseEntityWrapper.wrapListInResponseEntity(examRegistrationRepository.findByExamEventId(examEventId));
     }
 
     @PreAuthorize("hasRole('USER')")
     @GetMapping(value = "/users/{userId}/exam_registrations", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getExamRegistrationsForUser(@PathVariable Long userId)
     {
-        return Optional.ofNullable(examRegistrationRepository.findByUserId(userId))
+        return userRepository.findById(userId)
+                .map(foundUser -> examRegistrationRepository.findByUserId(foundUser.getId()))
                 .map(examRegistrations -> {
                     List<JSONObject> jsonObjects = examRegistrations.stream()
-                        .map(registration -> {
-                            JSONObject registrationJson;
-                            try
-                            {
-                                registrationJson = new JSONObject(objectMapper.writeValueAsString(registration));
-                                registrationJson.put("eventId", registration.getExamEvent().getId());
-                                registrationJson.put("eventName", registration.getExamEvent().getEventName());
-                            }
-                            catch (JsonProcessingException e) { throw new RuntimeException((e)); }
-                            catch (JSONException e) { throw new RuntimeException(e); }
+                            .map(registration -> {
+                                JSONObject registrationJson;
+                                try
+                                {
+                                    registrationJson = new JSONObject(objectMapper.writeValueAsString(registration));
+                                    registrationJson.put("eventId", registration.getExamEvent().getId());
+                                    registrationJson.put("eventName", registration.getExamEvent().getEventName());
+                                }
+                                catch (JsonProcessingException e) { throw new RuntimeException((e)); }
+                                catch (JSONException e) { throw new RuntimeException(e); }
 
-                            return registrationJson;
-                        }).collect(Collectors.toList());
+                                return registrationJson;
+                            }).collect(Collectors.toList());
 
                     return ResponseEntity.ok( new JSONArray(jsonObjects).toString() );
                 }).orElseGet(() -> ResponseEntity.notFound().build());
