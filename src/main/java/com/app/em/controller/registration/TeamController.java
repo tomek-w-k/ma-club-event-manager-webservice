@@ -16,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -79,37 +78,32 @@ public class TeamController
     public ResponseEntity getTeamsForEvent(@PathVariable Long tournamentEventId)
     {
         return tournamentEventRepository.findById(tournamentEventId)
-                .map(tournamentEvent -> {
-                    return Optional.ofNullable(teamRepository.findByTournamentEvent(tournamentEvent))
-                            .map(listToResponseEntityWrapper::wrapListInResponseEntity)
-                            .orElseGet(() -> ResponseEntity.notFound().build());
-                })
-                .orElseGet(() -> ResponseEntity.badRequest().body(new MessageResponse("Error - A given tournament doesn't exist.")));
+                .map(tournamentEvent -> teamRepository.findByTournamentEvent(tournamentEvent) )
+                .map(listToResponseEntityWrapper::wrapListInResponseEntity)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PreAuthorize("hasRole('TRAINER')")
     @GetMapping(value = "/user/{userId}/teams", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getAllTeamsForUser(@PathVariable Long userId)
     {
-        return Optional.ofNullable(teamRepository.findByTrainerId(userId))
-                .map(teams -> {
-                    List<JSONObject> jsonObjects = teams.stream()
-                        .map(team -> {
-                            JSONObject teamJson;
-                            try
-                            {
-                                teamJson = new JSONObject(objectMapper.writeValueAsString(team));
-                                teamJson.put("eventId", team.getTournamentEvent().getId());
-                                teamJson.put("eventName", team.getTournamentEvent().getEventName());
-                            }
-                            catch (JsonProcessingException e) { throw new RuntimeException(e); }
-                            catch (JSONException e) { throw new RuntimeException(e); }
+        List<JSONObject> allTeams = teamRepository.findByTrainerId(userId)
+                .stream()
+                .map(team -> {
+                    JSONObject teamJson;
+                    try
+                    {
+                        teamJson = new JSONObject(objectMapper.writeValueAsString(team));
+                        teamJson.put("eventId", team.getTournamentEvent().getId());
+                        teamJson.put("eventName", team.getTournamentEvent().getEventName());
+                    }
+                    catch (JsonProcessingException e) { throw new RuntimeException(e); }
+                    catch (JSONException e) { throw new RuntimeException(e); }
 
-                            return teamJson;
-                        }).collect(Collectors.toList());
+                    return teamJson;
+                }).collect(Collectors.toList());
 
-                    return ResponseEntity.ok( new JSONArray(jsonObjects).toString() );
-                }).orElseGet(() -> ResponseEntity.notFound().build());
+        return ResponseEntity.ok( new JSONArray(allTeams).toString() );
     }
 
     @PreAuthorize("hasRole('TRAINER')")
