@@ -17,6 +17,9 @@ import java.util.*;
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class UserController
 {
+    private final static String YES = "yes";
+    private final static String NO = "no";
+
     @Autowired
     UserRepository userRepository;
 
@@ -66,12 +69,26 @@ public class UserController
          return listToResponseEntityWrapper.wrapListInResponseEntity(userRepository.findAll());
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/roles/{roleName}/users", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity getUsersForRole(@PathVariable String roleName)
+    public ResponseEntity getUsersForRole(@PathVariable String roleName, @RequestParam String hasRole)
     {
         return roleRepository.findByRoleName(RoleEnum.valueOf(roleName))
-                .map(role -> listToResponseEntityWrapper.wrapListInResponseEntity( userRepository.findByRoles(role)) )
+                .map(role -> {
+                    switch ( hasRole )
+                    {
+                        case YES: return listToResponseEntityWrapper.wrapListInResponseEntity(userRepository.findByRoles(role));
+                        case NO: return listToResponseEntityWrapper.wrapListInResponseEntity(userRepository.findByRolesNotContaining(role));
+                        default: return ResponseEntity.notFound().build();
+                    }
+                }).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/administrators")
+    public ResponseEntity manageAdminPrivileges(@RequestBody User adminUser)
+    {
+        return userRepository.findById(adminUser.getId())
+                .map(foundUser -> ResponseEntity.ok(userRepository.save(adminUser)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 

@@ -21,4 +21,5 @@ public interface UserRepository extends CrudRepository<User, Long>
     List<User> findByClub(Club club);
     List<User> findByBranchChief(BranchChief branchChief);
     List<User> findByRoles(Role role);
+    List<User> findByRolesNotContaining(Role role);
 }
