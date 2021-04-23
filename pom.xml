@@ -104,7 +104,6 @@
 					<propertyFileWillOverride>true</propertyFileWillOverride>
 					<propertyFile>src/main/resources/liquibase.properties</propertyFile>
 					<driver>com.mysql.jdbc.Driver</driver>
-					<url>jdbc:mysql://localhost:3306/ma_club_event_manager?useUnicode=true&amp;useJDBCCompliantTimezoneShift=true&amp;useLegacyDatetimeCode=false&amp;serverTimezone=UTC</url>
 					<referenceUrl>hibernate:spring:com.app.em?dialect=org.hibernate.dialect.MySQL5Dialect</referenceUrl>
 					<referenceDriver>liquibase.ext.hibernate.database.connection.HibernateDriver</referenceDriver>
 					<outputChangeLogFile>src/main/resources/liquibase/changelog.xml</outputChangeLogFile>
