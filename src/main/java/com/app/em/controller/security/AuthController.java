@@ -9,6 +9,7 @@ import com.app.em.security.payload.response.JwtResponse;
 import com.app.em.security.payload.response.MessageResponse;
 import com.app.em.security.service.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,10 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -29,6 +27,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/auth")
 public class AuthController
 {
+    private static final long NO_USERS_REGISTERED = 0;
+
     @Autowired
     AuthenticationManager authenticationManager;
 
@@ -98,17 +98,38 @@ public class AuthController
                 .orElseGet(() -> branchChiefRepository.save(signUpRequest.getBranchChief())) );
 
         Set<Role> rolesForUser = new HashSet<>();
-        Role roleUser = roleRepository.findByRoleName(RoleEnum.ROLE_USER).orElseGet(() -> new Role(RoleEnum.ROLE_USER));
-        rolesForUser.add(roleUser);
+        rolesForUser.add( getRoleUser() );
+
         if ( signUpRequest.getAsTrainer() )
+            rolesForUser.add( getRoleTrainer() );
+
+        if ( userRepository.count() == NO_USERS_REGISTERED )
         {
-            Role roleTrainer = roleRepository.findByRoleName(RoleEnum.ROLE_TRAINER).orElseGet(() -> new Role(RoleEnum.ROLE_TRAINER));
-            rolesForUser.add(roleTrainer);
+            if ( rolesForUser.stream().noneMatch(role -> role.getRoleName().equals(RoleEnum.ROLE_TRAINER)) )
+                rolesForUser.add( getRoleTrainer() );
+            rolesForUser.add( getRoleAdmin() );
         }
 
         user.setRoles(rolesForUser);
         User registeredUser = userRepository.save(user);
 
         return ResponseEntity.ok(registeredUser);
+    }
+
+    // - - - PRIVATE METHODS - - -
+
+    private Role getRoleUser()
+    {
+        return roleRepository.findByRoleName(RoleEnum.ROLE_USER).orElseGet(() -> new Role(RoleEnum.ROLE_USER));
+    }
+
+    private Role getRoleTrainer()
+    {
+        return roleRepository.findByRoleName(RoleEnum.ROLE_TRAINER).orElseGet(() -> new Role(RoleEnum.ROLE_TRAINER));
+    }
+
+    private Role getRoleAdmin()
+    {
+        return roleRepository.findByRoleName(RoleEnum.ROLE_ADMIN).orElseGet(() -> new Role(RoleEnum.ROLE_ADMIN));
     }
 }
