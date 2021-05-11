@@ -39,8 +39,12 @@ An application was tested on **Ubuntu 19.10** and with **MySQL 10.4.11** databas
     mail-sender.frontend-reset-password-component-path=password_reset
     mail-sender.frontend-server-domain=localhost:3001
     ```
-6. From `resources` directory go to `liquibase` directory. Create file `changelog.xml` and copy all the content of its template file.
-7. In console, go to the main project directory. Run `mvn liquibase:diff` command. The `changelog.xml` file should be now filled up with an entire entity structure of the project.
-8. Run `mvn compile` command to build the project.
+6. From `resources` directory go down to `liquibase` directory. Create file `changelog.xml` and copy all the content of its template file.
+7. Go back to the main project directory and run `mvn compile` command to build the project.
+8. Run `mvn liquibase:diff` command. The `changelog.xml` file should be now filled up with an entire entity structure of the project.
 9. Run `mvn spring-boot:run` to start the application.
 10. Instead of above two points, you may also run `mvn package` command to build a project package and then run `java -jar target/ma-club-event-manager-webservice-0.0.1-SNAPSHOT.jar` to start the application.
+
+## Troubleshoot
+1. If you got an error while starting an application saying that `liquibase.exception.DatabaseException: java.sql.SQLSyntaxErrorException: Unknown database '${db-name}'`, open `application.properties` file and in `spring.datasource.url` parameter replace `${db-name}` variable with your database name.
+
