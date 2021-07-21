@@ -16,6 +16,9 @@ public class CampEvent extends Event
     @Column(name = "sayonara_meeting")
     private Boolean sayonaraMeeting;
 
+    @Column(name = "accommodation")
+    private Boolean accommodation;
+
     @NotBlank
     @Column(name = "clothing_type")
     private String clothingType;
@@ -44,6 +47,7 @@ public class CampEvent extends Event
                      Date startDate,
                      Date endDate,
                      Boolean sayonaraMeeting,
+                     Boolean accommodation,
                      String clothingType,
                      List<ClothingSize> clothingSizes,
                      List<Fee> fees,
@@ -51,6 +55,7 @@ public class CampEvent extends Event
     {
         super(id, eventName, eventDescription, eventPicturePath, dateCreated, startDate, endDate);
         this.sayonaraMeeting = sayonaraMeeting;
+        this.accommodation = accommodation;
         this.clothingType = clothingType;
         this.clothingSizes = clothingSizes;
         this.fees = fees;
@@ -65,6 +70,16 @@ public class CampEvent extends Event
     public void setSayonaraMeeting(Boolean sayonaraMeeting)
     {
         this.sayonaraMeeting = sayonaraMeeting;
+    }
+
+    public Boolean getAccommodation()
+    {
+        return accommodation;
+    }
+
+    public void setAccommodation(Boolean accommodation)
+    {
+        this.accommodation = accommodation;
     }
 
     public String getClothingType()
