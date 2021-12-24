@@ -16,7 +16,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -30,33 +29,37 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class TournamentRegistrationController
 {
-    @Autowired
-    TournamentRegistrationRepository tournamentRegistrationRepository;
+    private final TournamentRegistrationRepository tournamentRegistrationRepository;
+    private final TournamentEventRepository tournamentEventRepository;
+    private final RoomTypeRepository roomTypeRepository;
+    private final StayPeriodRepository stayPeriodRepository;
+    private final WeightAgeCategoryRepository weightAgeCategoryRepository;
+    private final UserRepository userRepository;
+    private final TeamRepository teamRepository;
+    private final ObjectMapper objectMapper;
+    private final ListToResponseEntityWrapper listToResponseEntityWrapper;
 
-    @Autowired
-    TournamentEventRepository tournamentEventRepository;
 
-    @Autowired
-    RoomTypeRepository roomTypeRepository;
-
-    @Autowired
-    StayPeriodRepository stayPeriodRepository;
-
-    @Autowired
-    WeightAgeCategoryRepository weightAgeCategoryRepository;
-
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    TeamRepository teamRepository;
-
-    @Autowired
-    ObjectMapper objectMapper;
-
-    @Autowired
-    ListToResponseEntityWrapper listToResponseEntityWrapper;
-
+    public TournamentRegistrationController(    TournamentRegistrationRepository tournamentRegistrationRepository,
+                                                TournamentEventRepository tournamentEventRepository,
+                                                RoomTypeRepository roomTypeRepository,
+                                                StayPeriodRepository stayPeriodRepository,
+                                                WeightAgeCategoryRepository weightAgeCategoryRepository,
+                                                UserRepository userRepository,
+                                                TeamRepository teamRepository,
+                                                ObjectMapper objectMapper,
+                                                ListToResponseEntityWrapper listToResponseEntityWrapper
+    ) {
+         this.tournamentRegistrationRepository = tournamentRegistrationRepository;
+         this.tournamentEventRepository = tournamentEventRepository;
+         this.roomTypeRepository = roomTypeRepository;
+         this.stayPeriodRepository = stayPeriodRepository;
+         this.weightAgeCategoryRepository = weightAgeCategoryRepository;
+         this.userRepository = userRepository;
+         this.teamRepository = teamRepository;
+         this.objectMapper = objectMapper;
+         this.listToResponseEntityWrapper = listToResponseEntityWrapper;
+    }
 
     @PreAuthorize("hasRole('TRAINER')")
     @PostMapping("/teams/{teamId}/tournament_registrations")

@@ -12,7 +12,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,24 +27,28 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class CampRegistrationController
 {
-    @Autowired
-    CampRegistrationRepository campRegistrationRepository;
+    private final CampRegistrationRepository campRegistrationRepository;
+    private final CampEventRepository campEventRepository;
+    private final ClothingSizeRepository clothingSizeRepository;
+    private final UserRepository userRepository;
+    private final ObjectMapper objectMapper;
+    private final ListToResponseEntityWrapper listToResponseEntityWrapper;
 
-    @Autowired
-    CampEventRepository campEventRepository;
 
-    @Autowired
-    ClothingSizeRepository clothingSizeRepository;
-
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    ObjectMapper objectMapper;
-
-    @Autowired
-    ListToResponseEntityWrapper listToResponseEntityWrapper;
-
+    public CampRegistrationController(  CampRegistrationRepository campRegistrationRepository,
+                                        CampEventRepository campEventRepository,
+                                        ClothingSizeRepository clothingSizeRepository,
+                                        UserRepository userRepository,
+                                        ObjectMapper objectMapper,
+                                        ListToResponseEntityWrapper listToResponseEntityWrapper
+    ) {
+        this.campRegistrationRepository = campRegistrationRepository;
+        this.campEventRepository = campEventRepository;
+        this.clothingSizeRepository = clothingSizeRepository;
+        this.userRepository = userRepository;
+        this.objectMapper = objectMapper;
+        this.listToResponseEntityWrapper = listToResponseEntityWrapper;
+    }
 
     @PreAuthorize("hasRole('USER')")
     @PostMapping("/camp_registrations")

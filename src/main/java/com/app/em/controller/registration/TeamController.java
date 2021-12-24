@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,18 +22,22 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class TeamController
 {
-    @Autowired
-    TeamRepository teamRepository;
+    private final TeamRepository teamRepository;
+    private final TournamentEventRepository tournamentEventRepository;
+    private final ObjectMapper objectMapper;
+    private final ListToResponseEntityWrapper listToResponseEntityWrapper;
 
-    @Autowired
-    TournamentEventRepository tournamentEventRepository;
 
-    @Autowired
-    ObjectMapper objectMapper;
-
-    @Autowired
-    ListToResponseEntityWrapper listToResponseEntityWrapper;
-
+    public TeamController(  TeamRepository teamRepository,
+                            TournamentEventRepository tournamentEventRepository,
+                            ObjectMapper objectMapper,
+                            ListToResponseEntityWrapper listToResponseEntityWrapper
+    ) {
+        this.teamRepository = teamRepository;
+        this.tournamentEventRepository = tournamentEventRepository;
+        this.objectMapper = objectMapper;
+        this.listToResponseEntityWrapper = listToResponseEntityWrapper;
+    }
 
     @PreAuthorize("hasRole('TRAINER')")
     @PostMapping(value = "/tournament_events/{tournamentEventId}/teams", produces = MediaType.APPLICATION_JSON_VALUE)

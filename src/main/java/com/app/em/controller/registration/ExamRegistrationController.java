@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,21 +24,25 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class ExamRegistrationController
 {
-    @Autowired
-    ExamRegistrationRepository examRegistrationRepository;
+    private final ExamRegistrationRepository examRegistrationRepository;
+    private final ExamEventRepository examEventRepository;
+    private final UserRepository userRepository;
+    private final ObjectMapper objectMapper;
+    private final ListToResponseEntityWrapper listToResponseEntityWrapper;
 
-    @Autowired
-    ExamEventRepository examEventRepository;
 
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    ObjectMapper objectMapper;
-
-    @Autowired
-    ListToResponseEntityWrapper listToResponseEntityWrapper;
-
+    public ExamRegistrationController(  ExamRegistrationRepository examRegistrationRepository,
+                                        ExamEventRepository examEventRepository,
+                                        UserRepository userRepository,
+                                        ObjectMapper objectMapper,
+                                        ListToResponseEntityWrapper listToResponseEntityWrapper
+    ) {
+        this.examRegistrationRepository = examRegistrationRepository;
+        this.examEventRepository = examEventRepository;
+        this.userRepository = userRepository;
+        this.objectMapper = objectMapper;
+        this.listToResponseEntityWrapper = listToResponseEntityWrapper;
+    }
 
     @PreAuthorize("hasRole('USER')")
     @PostMapping("/exam_registrations")
