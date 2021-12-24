@@ -11,7 +11,6 @@ import com.app.em.persistence.repository.event.TournamentEventRepository;
 import com.app.em.security.payload.response.MessageResponse;
 import com.app.em.utils.ListToResponseEntityWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,23 +21,28 @@ import java.sql.SQLIntegrityConstraintViolationException;
 
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600)
-public class EventControler
+public class EventController
 {
-    @Autowired
-    EventRepository eventRepository;
+    private final EventRepository eventRepository;
+    private final ExamEventRepository examEventRepository;
+    private final CampEventRepository campEventRepository;
+    private final TournamentEventRepository tournamentEventRepository;
+    private final ListToResponseEntityWrapper listToResponseEntityWrapper;
 
-    @Autowired
-    ExamEventRepository examEventRepository;
 
-    @Autowired
-    CampEventRepository campEventRepository;
+    public EventController( EventRepository eventRepository,
+                            ExamEventRepository examEventRepository,
+                            CampEventRepository campEventRepository,
+                            TournamentEventRepository tournamentEventRepository,
+                            ListToResponseEntityWrapper listToResponseEntityWrapper
 
-    @Autowired
-    TournamentEventRepository tournamentEventRepository;
-
-    @Autowired
-    ListToResponseEntityWrapper listToResponseEntityWrapper;
-
+    ) {
+        this.eventRepository = eventRepository;
+        this.examEventRepository = examEventRepository;
+        this.campEventRepository = campEventRepository;
+        this.tournamentEventRepository = tournamentEventRepository;
+        this.listToResponseEntityWrapper = listToResponseEntityWrapper;
+    }
 
     // - - - - EXAM EVENT - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
