@@ -3,7 +3,6 @@ package com.app.em.controller.club_document;
 import com.app.em.persistence.entity.club_document.ClubDocument;
 import com.app.em.persistence.repository.club_document.ClubDocumentRepository;
 import com.app.em.utils.ListToResponseEntityWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,11 +13,16 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class ClubDocumentController
 {
-    @Autowired
-    ClubDocumentRepository clubDocumentRepository;
+    private final ClubDocumentRepository clubDocumentRepository;
+    private final ListToResponseEntityWrapper listToResponseEntityWrapper;
 
-    @Autowired
-    ListToResponseEntityWrapper listToResponseEntityWrapper;
+
+    public ClubDocumentController(  ClubDocumentRepository clubDocumentRepository,
+                                    ListToResponseEntityWrapper listToResponseEntityWrapper
+    ) {
+        this.clubDocumentRepository = clubDocumentRepository;
+        this.listToResponseEntityWrapper = listToResponseEntityWrapper;
+    }
 
 
     @PreAuthorize("hasRole('ADMIN')")
