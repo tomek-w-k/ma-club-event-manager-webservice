@@ -8,8 +8,6 @@ import com.app.em.security.payload.request.SignUpRequest;
 import com.app.em.security.payload.response.JwtResponse;
 import com.app.em.security.payload.response.MessageResponse;
 import com.app.em.security.service.UserDetailsImpl;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -29,26 +27,31 @@ public class AuthController
 {
     private static final long NO_USERS_REGISTERED = 0;
 
-    @Autowired
-    AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final ClubRepository clubRepository;
+    private final BranchChiefRepository branchChiefRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtils jwtUtils;
 
-    @Autowired
-    UserRepository userRepository;
 
-    @Autowired
-    RoleRepository roleRepository;
-
-    @Autowired
-    ClubRepository clubRepository;
-
-    @Autowired
-    BranchChiefRepository branchChiefRepository;
-
-    @Autowired
-    PasswordEncoder passwordEncoder;
-
-    @Autowired
-    JwtUtils jwtUtils;
+    public AuthController(  AuthenticationManager authenticationManager,
+                            UserRepository userRepository,
+                            RoleRepository roleRepository,
+                            ClubRepository clubRepository,
+                            BranchChiefRepository branchChiefRepository,
+                            PasswordEncoder passwordEncoder,
+                            JwtUtils jwtUtils
+    ) {
+        this.authenticationManager = authenticationManager;
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.clubRepository = clubRepository;
+        this.branchChiefRepository = branchChiefRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtUtils = jwtUtils;
+    }
 
 
     @PostMapping("/signin")

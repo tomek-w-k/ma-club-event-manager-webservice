@@ -7,7 +7,6 @@ import com.app.em.persistence.repository.user.UserRepository;
 import com.app.em.security.payload.request.NewPasswordRequest;
 import com.app.em.security.payload.request.PasswordResetRequest;
 import com.app.em.security.service.PasswordResetMailSenderService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,17 +28,22 @@ public class PasswordResetController
 {
     private static final int TOKEN_EXPIRED_HTTP_STATUS = 498;
 
-    @Autowired
-    UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final PasswordResetMailSenderService mailSender;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    PasswordResetTokenRepository passwordResetTokenRepository;
 
-    @Autowired
-    PasswordResetMailSenderService mailSender;
-
-    @Autowired
-    PasswordEncoder passwordEncoder;
+    public PasswordResetController( UserRepository userRepository,
+                                    PasswordResetTokenRepository passwordResetTokenRepository,
+                                    PasswordResetMailSenderService passwordResetMailSenderService,
+                                    PasswordEncoder passwordEncoder
+    ) {
+        this.userRepository = userRepository;
+        this.passwordResetTokenRepository = passwordResetTokenRepository;
+        this.mailSender = passwordResetMailSenderService;
+        this.passwordEncoder = passwordEncoder;
+    }
 
 
     @PostMapping("/generate_token")
