@@ -6,28 +6,30 @@ import com.app.em.persistence.repository.user.BranchChiefRepository;
 import com.app.em.persistence.repository.user.UserRepository;
 import com.app.em.security.payload.response.MessageResponse;
 import com.app.em.utils.ListToResponseEntityWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class BranchChiefController
 {
-    @Autowired
-    BranchChiefRepository branchChiefRepository;
+    private final BranchChiefRepository branchChiefRepository;
+    private final UserRepository userRepository;
+    private final ListToResponseEntityWrapper listToResponseEntityWrapper;
 
-    @Autowired
-    UserRepository userRepository;
 
-    @Autowired
-    ListToResponseEntityWrapper listToResponseEntityWrapper;
-
+    public BranchChiefController(   BranchChiefRepository branchChiefRepository,
+                                    UserRepository userRepository,
+                                    ListToResponseEntityWrapper listToResponseEntityWrapper
+    ) {
+        this.branchChiefRepository = branchChiefRepository;
+        this.userRepository = userRepository;
+        this.listToResponseEntityWrapper = listToResponseEntityWrapper;
+    }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/branch_chiefs", produces = MediaType.APPLICATION_JSON_VALUE)

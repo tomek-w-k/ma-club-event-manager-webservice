@@ -4,7 +4,6 @@ import com.app.em.persistence.entity.user.*;
 import com.app.em.persistence.repository.user.*;
 import com.app.em.security.payload.response.MessageResponse;
 import com.app.em.utils.ListToResponseEntityWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,24 +19,28 @@ public class UserController
     private final static String YES = "yes";
     private final static String NO = "no";
 
-    @Autowired
-    UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final RankRepository rankRepository;
+    private final ClubRepository clubRepository;
+    private final RoleRepository roleRepository;
+    private final BranchChiefRepository branchChiefRepository;
+    private final ListToResponseEntityWrapper listToResponseEntityWrapper;
 
-    @Autowired
-    RankRepository rankRepository;
 
-    @Autowired
-    ClubRepository clubRepository;
-
-    @Autowired
-    RoleRepository roleRepository;
-
-    @Autowired
-    BranchChiefRepository branchChiefRepository;
-
-    @Autowired
-    ListToResponseEntityWrapper listToResponseEntityWrapper;
-
+    public UserController( UserRepository userRepository,
+                           RankRepository rankRepository,
+                           ClubRepository clubRepository,
+                           RoleRepository roleRepository,
+                           BranchChiefRepository branchChiefRepository,
+                           ListToResponseEntityWrapper listToResponseEntityWrapper
+    ) {
+        this.userRepository = userRepository;
+        this.rankRepository = rankRepository;
+        this.clubRepository = clubRepository;
+        this.roleRepository = roleRepository;
+        this.branchChiefRepository = branchChiefRepository;
+        this.listToResponseEntityWrapper = listToResponseEntityWrapper;
+    }
 
     @PreAuthorize("hasRole('TRAINER')")
     @PostMapping("/users")
