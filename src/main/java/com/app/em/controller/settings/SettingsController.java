@@ -2,7 +2,6 @@ package com.app.em.controller.settings;
 
 import com.app.em.persistence.entity.settings.Setting;
 import com.app.em.persistence.repository.settings.SettingRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,10 +21,12 @@ public class SettingsController
     private static final String GDPR_CLAUSE_PL = "gdpr_clause_pl";
     private static final String GDPR_CLAUSE_EN = "gdpr_clause_en";
 
+    private final SettingRepository settingRepository;
 
-    @Autowired
-    SettingRepository settingRepository;
 
+    public SettingsController(SettingRepository settingRepository) {
+        this.settingRepository = settingRepository;
+    }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(value = "/property", produces = MediaType.APPLICATION_JSON_VALUE)
