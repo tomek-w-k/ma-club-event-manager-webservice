@@ -3,7 +3,6 @@ package com.app.em.security;
 import com.app.em.security.jwt.AuthEntryPointJwt;
 import com.app.em.security.jwt.AuthTokenFilter;
 import com.app.em.security.service.UserDetailsServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,9 +17,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.firewall.HttpStatusRequestRejectedHandler;
 import org.springframework.security.web.firewall.RequestRejectedHandler;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 
 @Configuration

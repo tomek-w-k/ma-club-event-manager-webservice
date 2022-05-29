@@ -2,7 +2,6 @@ package com.app.em.security.service;
 
 import com.app.em.persistence.entity.user.User;
 import com.app.em.persistence.repository.user.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -14,16 +13,20 @@ import javax.transaction.Transactional;
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService
 {
-    @Autowired
-    UserRepository userRepository;
+    private final UserRepository userRepository;
 
+
+    public UserDetailsServiceImpl(UserRepository userRepository)
+    {
+        this.userRepository = userRepository;
+    }
 
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException
     {
         User user = userRepository.findByEmail(email)
-                .orElseThrow( () -> new UsernameNotFoundException("User with email " + email + " does not exist") );
+                .orElseThrow(() -> new UsernameNotFoundException("User with email " + email + " does not exist"));
 
         return UserDetailsImpl.build(user);
     }
