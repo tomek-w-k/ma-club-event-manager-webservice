@@ -2,7 +2,6 @@ package com.app.em.persistence.entity.registration;
 
 import com.app.em.persistence.entity.event.CampEvent;
 import com.app.em.persistence.entity.event.ClothingSize;
-import com.app.em.persistence.entity.event.Event;
 import com.app.em.persistence.entity.user.User;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
@@ -29,6 +28,9 @@ public class CampRegistration extends Registration
     @JoinColumn(name = "camp_event_id")
     CampEvent campEvent;
 
+    @Column(name = "advance_payment_received")
+    private Boolean advancePaymentReceived;
+
 
     public CampRegistration() {  }
 
@@ -38,13 +40,15 @@ public class CampRegistration extends Registration
                             Boolean sayonaraMeetingParticipation,
                             ClothingSize clothingSize,
                             Boolean accommodation,
-                            CampEvent campEvent)
+                            CampEvent campEvent,
+                            Boolean advancePaymentReceived)
     {
         super(id, user, feeReceived);
         this.sayonaraMeetingParticipation = sayonaraMeetingParticipation;
         this.clothingSize = clothingSize;
         this.accommodation = accommodation;
         this.campEvent = campEvent;
+        this.advancePaymentReceived = advancePaymentReceived;
     }
 
     public Boolean getSayonaraMeetingParticipation()
@@ -85,5 +89,15 @@ public class CampRegistration extends Registration
     public void setCampEvent(CampEvent campEvent)
     {
         this.campEvent = campEvent;
+    }
+
+    public Boolean getAdvancePaymentReceived()
+    {
+        return advancePaymentReceived;
+    }
+
+    public void setAdvancePaymentReceived(Boolean advancePaymentReceived)
+    {
+        this.advancePaymentReceived = advancePaymentReceived;
     }
 }
