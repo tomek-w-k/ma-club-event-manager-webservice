@@ -28,8 +28,8 @@ public class CampRegistration extends Registration
     @JoinColumn(name = "camp_event_id")
     CampEvent campEvent;
 
-    @Column(name = "advance_payment_received")
-    private Boolean advancePaymentReceived;
+    @Column(name = "advance_payment")
+    private String advancePayment;
 
 
     public CampRegistration() {  }
@@ -41,14 +41,14 @@ public class CampRegistration extends Registration
                             ClothingSize clothingSize,
                             Boolean accommodation,
                             CampEvent campEvent,
-                            Boolean advancePaymentReceived)
+                            String advancePayment)
     {
         super(id, user, feeReceived);
         this.sayonaraMeetingParticipation = sayonaraMeetingParticipation;
         this.clothingSize = clothingSize;
         this.accommodation = accommodation;
         this.campEvent = campEvent;
-        this.advancePaymentReceived = advancePaymentReceived;
+        this.advancePayment = advancePayment;
     }
 
     public Boolean getSayonaraMeetingParticipation()
@@ -91,13 +91,13 @@ public class CampRegistration extends Registration
         this.campEvent = campEvent;
     }
 
-    public Boolean getAdvancePaymentReceived()
+    public String getAdvancePayment()
     {
-        return advancePaymentReceived;
+        return advancePayment;
     }
 
-    public void setAdvancePaymentReceived(Boolean advancePaymentReceived)
+    public void setAdvancePayment(String advancePayment)
     {
-        this.advancePaymentReceived = advancePaymentReceived;
+        this.advancePayment = advancePayment;
     }
 }
