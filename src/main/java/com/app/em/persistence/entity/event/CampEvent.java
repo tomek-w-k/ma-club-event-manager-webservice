@@ -22,6 +22,9 @@ public class CampEvent extends Event
     @Column(name = "show_accommodation_on_registration_form")
     private Boolean showAccommodationOnRegistrationForm;
 
+    @Column(name = "number_of_places")
+    private Integer numberOfPlaces;
+
     @NotBlank
     @Column(name = "clothing_type")
     private String clothingType;
@@ -55,6 +58,7 @@ public class CampEvent extends Event
                      Boolean sayonaraMeeting,
                      Boolean accommodation,
                      Boolean showAccommodationOnRegistrationForm,
+                     Integer numberOfPlaces,
                      String clothingType,
                      List<ClothingSize> clothingSizes,
                      List<Fee> fees,
@@ -65,6 +69,7 @@ public class CampEvent extends Event
         this.sayonaraMeeting = sayonaraMeeting;
         this.accommodation = accommodation;
         this.showAccommodationOnRegistrationForm = showAccommodationOnRegistrationForm;
+        this.numberOfPlaces = numberOfPlaces;
         this.clothingType = clothingType;
         this.clothingSizes = clothingSizes;
         this.fees = fees;
@@ -99,6 +104,16 @@ public class CampEvent extends Event
     public void setShowAccommodationOnRegistrationForm(Boolean showAccommodationOnRegistrationForm)
     {
         this.showAccommodationOnRegistrationForm = showAccommodationOnRegistrationForm;
+    }
+
+    public Integer getNumberOfPlaces()
+    {
+        return numberOfPlaces;
+    }
+
+    public void setNumberOfPlaces(Integer numberOfPlaces)
+    {
+        this.numberOfPlaces = numberOfPlaces;
     }
 
     public String getClothingType()
