@@ -40,7 +40,9 @@ public class CampEvent extends Event
     private List<CampRegistration> campRegistrations;
 
 
-    public CampEvent() {  }
+    public CampEvent()
+    {
+    }
 
     public CampEvent(Long id,
                      String eventName,
@@ -49,15 +51,17 @@ public class CampEvent extends Event
                      Date dateCreated,
                      Date startDate,
                      Date endDate,
+                     Boolean suspendRegistraion,
                      Boolean sayonaraMeeting,
                      Boolean accommodation,
                      Boolean showAccommodationOnRegistrationForm,
                      String clothingType,
                      List<ClothingSize> clothingSizes,
                      List<Fee> fees,
-                     List<CampRegistration> campRegistrations)
+                     List<CampRegistration> campRegistrations
+    )
     {
-        super(id, eventName, eventDescription, eventPicturePath, dateCreated, startDate, endDate);
+        super(id, eventName, eventDescription, eventPicturePath, dateCreated, startDate, endDate, suspendRegistraion);
         this.sayonaraMeeting = sayonaraMeeting;
         this.accommodation = accommodation;
         this.showAccommodationOnRegistrationForm = showAccommodationOnRegistrationForm;

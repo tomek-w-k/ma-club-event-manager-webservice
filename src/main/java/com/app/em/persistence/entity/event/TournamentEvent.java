@@ -1,7 +1,5 @@
 package com.app.em.persistence.entity.event;
 
-import com.app.em.persistence.entity.registration.ExamRegistration;
-import com.app.em.persistence.entity.registration.TournamentRegistration;
 import com.app.em.persistence.entity.team.Team;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
@@ -41,7 +39,9 @@ public class TournamentEvent extends Event
     private List<Team> teams;
 
 
-    public TournamentEvent() {  }
+    public TournamentEvent()
+    {
+    }
 
     public TournamentEvent(Long id,
                            String eventName,
@@ -50,6 +50,7 @@ public class TournamentEvent extends Event
                            Date dateCreated,
                            Date startDate,
                            Date endDate,
+                           Boolean suspendRegistration,
                            Boolean sayonaraMeeting,
                            Boolean accommodation,
                            List<RoomType> roomTypes,
@@ -59,7 +60,7 @@ public class TournamentEvent extends Event
                            List<Team> teams
     )
     {
-        super(id, eventName, eventDescription, eventPicturePath, dateCreated, startDate, endDate);
+        super(id, eventName, eventDescription, eventPicturePath, dateCreated, startDate, endDate, suspendRegistration);
         this.sayonaraMeeting = sayonaraMeeting;
         this.accommodation = accommodation;
         this.roomTypes = roomTypes;

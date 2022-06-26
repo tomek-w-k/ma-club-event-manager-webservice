@@ -5,7 +5,6 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 
@@ -45,10 +44,23 @@ public abstract class Event
     @Column(name = "end_date")
     private Date endDate;
 
+    @Column(name = "suspend_registration")
+    private Boolean suspendRegistration;
 
-    public Event() {  }
 
-    public Event(Long id, String eventName, String eventDescription, String eventPicturePath, Date dateCreated, Date startDate, Date endDate)
+    public Event()
+    {
+    }
+
+    public Event(Long id,
+                 String eventName,
+                 String eventDescription,
+                 String eventPicturePath,
+                 Date dateCreated,
+                 Date startDate,
+                 Date endDate,
+                 Boolean suspendRegistration
+    )
     {
         this.id = id;
         this.eventName = eventName;
@@ -57,6 +69,7 @@ public abstract class Event
         this.dateCreated = dateCreated;
         this.startDate = startDate;
         this.endDate = endDate;
+        this.suspendRegistration = suspendRegistration;
     }
 
     public Long getId()
@@ -127,5 +140,15 @@ public abstract class Event
     public void setEndDate(Date endDate)
     {
         this.endDate = endDate;
+    }
+
+    public Boolean getSuspendRegistration()
+    {
+        return suspendRegistration;
+    }
+
+    public void setSuspendRegistration(Boolean suspendRegistration)
+    {
+        this.suspendRegistration = suspendRegistration;
     }
 }

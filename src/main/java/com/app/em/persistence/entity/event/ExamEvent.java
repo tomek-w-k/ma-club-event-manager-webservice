@@ -26,7 +26,9 @@ public class ExamEvent extends Event
     private List<ExamRegistration> examRegistrations;
 
 
-    public ExamEvent() {  }
+    public ExamEvent()
+    {
+    }
 
     public ExamEvent(Long id,
                      String eventName,
@@ -35,10 +37,11 @@ public class ExamEvent extends Event
                      Date dateCreated,
                      Date startDate,
                      Date endDate,
+                     Boolean suspendRegistration,
                      List<Fee> fees,
                      List<ExamRegistration> examRegistrations)
     {
-        super(id, eventName, eventDescription, eventPicturePath, dateCreated, startDate, endDate);
+        super(id, eventName, eventDescription, eventPicturePath, dateCreated, startDate, endDate, suspendRegistration);
         this.fees = fees;
         this.examRegistrations = examRegistrations;
     }
