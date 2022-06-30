@@ -1,9 +1,9 @@
 package com.app.em.persistence.repository.registration;
 
-import com.app.em.persistence.entity.event.ClothingSize;
 import com.app.em.persistence.entity.registration.CampRegistration;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -17,4 +17,5 @@ public interface CampRegistrationRepository extends CrudRepository<CampRegistrat
     Optional<CampRegistration> findByUserIdAndCampEventId(Long userId, Long campEventId);
 
     Integer countCampRegistrationByClothingSizeId(Integer clothingSizeId);
+    Integer countCampRegistrationByCampEventId(Long id);
 }
